@@ -1,12 +1,25 @@
 const courseService = require("../services/course.service");
 const { success } = require("../utils/apiResponse");
 
-exports.createCourse = async (req, res, next) => {
+const Course = require("../models/course.model");
+
+exports.createCourse = async (req, res) => {
   try {
-    const data = await courseService.createCourse(req.body);
-    return success(res, "Course created", data);
-  } catch (err) {
-    next(err);
+    const { title, description } = req.body;
+
+    const course = await Course.create({
+      title,
+      description,
+      instructor: req.user.id  
+    });
+
+    res.json({
+      message: "Course created",
+      course
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
 

@@ -1,5 +1,6 @@
 // NOTE: DB will be added later
 
+
 exports.register = async ({ name, email, password }) => {
   return {
     name,
@@ -13,3 +14,7 @@ exports.login = async ({ email, password }) => {
     email
   };
 };
+
+if (!email || !password) {
+  return res.status(400).json({ message: "Email and password required" });
+}
