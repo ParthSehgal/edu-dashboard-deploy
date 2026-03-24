@@ -14,6 +14,20 @@ exports.createCourse = async ({ title, description }) => {
   return course;
 };
 
-exports.getCourses = async () => {
-  return courses;
+
+
+const Course = require('../models/course.model');
+
+exports.getCourseById = async (courseIdParam) => {
+    const course = await Course.findOne({ courseId: courseIdParam })
+        .populate('instructor', 'name email collegeId') 
+        .populate('students', 'name email'); 
+
+    if (!course) {
+        const error = new Error('Course not found');
+        error.statusCode = 404;
+        throw error;
+    }
+
+    return course;
 };

@@ -1,6 +1,5 @@
 // NOTE: DB will be added later
 
-
 exports.register = async ({ name, email, password }) => {
   return {
     name,
