@@ -3,7 +3,6 @@ const path = require("path");
 const Course = require("../models/course.model");
 const { success } = require("../utils/apiResponse");
 
-// GET /api/courses/:id/students/search?q=tan
 exports.searchStudents = async (req, res, next) => {
   try {
     const query = req.query.q;
@@ -25,8 +24,8 @@ exports.searchStudents = async (req, res, next) => {
 
     const studentNames = course.students.map((s) => s.name);
 
-
-    const binaryPath = path.join(__dirname, "../../trie/trie_search");
+    // Navigate up one folder to 'src', then into 'trie'
+    const binaryPath = path.join(__dirname, "../trie/trie_search.exe");
 
     const args = [query, ...studentNames];
 
@@ -45,26 +44,38 @@ exports.searchStudents = async (req, res, next) => {
 
     cpp.on("close", (code) => {
       if (code !== 0) {
-        console.error("C++ process error:", errorOutput);
-        return res.status(500).json({ message: "Search engine error" });
+        return res.status(500).json({ message: "Search engine crashed", errorOutput, code });
       }
 
-      const matchedNames = output.trim()
-        ? output.trim().split(",")
-        : [];
+      const rawOutput = output.trim();
+      const normalize = (str) => str.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+
+      const matchedNames = rawOutput ? rawOutput.split(",").map(normalize) : [];
 
       const matchedStudents = course.students.filter((student) =>
-        matchedNames.includes(student.name)
+        matchedNames.includes(normalize(student.name))
       );
 
-      return success(res, `Found ${matchedStudents.length} student(s)`, matchedStudents);
+      console.log(`[TRIE DEBUG] Query: '${query}'`);
+      console.log(`[TRIE DEBUG] C++ rawOutput: '${rawOutput}'`);
+      console.log(`[TRIE DEBUG] matchedNames Array:`, matchedNames);
+      console.log(`[TRIE DEBUG] matchedStudents Length:`, matchedStudents.length);
+      console.log(`[TRIE DEBUG] Returning JSON Data: \n`, JSON.stringify(matchedStudents, null, 2));
+
+      // Return debugging metadata inside success array so we know it didn't fail natively
+      return res.status(200).json({
+        success: true,
+        message: `Found ${matchedStudents.length} student(s)`,
+        data: matchedStudents,
+        debug: { rawOutput, matchedNames, args }
+      });
     });
 
     cpp.on("error", (err) => {
-      console.error("Failed to start C++ process:", err.message);
       return res.status(500).json({
-        message: "Could not start search engine. Is the binary compiled?",
-        hint: "Run: g++ -o trie/trie_search trie/trie_search.cpp"
+        message: "Failed to locate or start C++ Binary",
+        binaryPath,
+        error: err.message
       });
     });
 

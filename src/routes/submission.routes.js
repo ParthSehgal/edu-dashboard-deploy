@@ -20,7 +20,7 @@ router.post(
 router.get(
   "/", 
   protect, 
-  restrictTo("professor"), // Only professors can view the submission list
+  restrictTo("professor", "ta"), // TA can view too
   getSubmissionsForCourse
 );
 

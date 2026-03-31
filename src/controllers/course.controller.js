@@ -178,10 +178,22 @@ exports.deleteCourse = async (req, res, next) => {
 // 7. Get "My Courses" (Instructor Dashboard)
 exports.getMyCourses = async (req, res, next) => {
   try {
-    // We filter the database to only find courses created by the logged-in user
-    const courses = await Course.find({ instructor: req.user.id })
-      .populate("students", "name email") // Optional: Lets the professor see who is enrolled
-      .sort({ createdAt: -1 }); // Sorts by newest first
+    let courses;
+    if (req.user.role === 'professor') {
+      courses = await Course.find({ instructor: req.user.id })
+        .populate("students", "name email")
+        .sort({ createdAt: -1 });
+    } else if (req.user.role === 'student') {
+      courses = await Course.find({ students: req.user.id })
+        .populate("instructor", "name email")
+        .sort({ createdAt: -1 });
+    } else if (req.user.role === 'ta') {
+      courses = await Course.find({ tas: req.user.id })
+        .populate("instructor", "name email")
+        .sort({ createdAt: -1 });
+    } else {
+      courses = [];
+    }
 
     res.status(200).json({
       success: true,

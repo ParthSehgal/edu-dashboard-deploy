@@ -21,14 +21,26 @@ exports.protect = (req, res, next) => {
   }
 };
 
-//restrictTo("professor", "ta")
 exports.restrictTo = (...roles) => {
-  return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({
-        message: "You do not have permission to perform this action."
-      });
+  return async (req, res, next) => {
+    try {
+      let userRole = req.user.role;
+      
+      // If the old JWT token didn't contain a role, dynamically look it up from the DB
+      if (!userRole) {
+        const User = require('../models/user.model');
+        const user = await User.findById(req.user.id);
+        if (user && user.role) userRole = user.role;
+      }
+
+      if (!userRole || !roles.includes(userRole.toLowerCase())) {
+        return res.status(403).json({
+          message: "You do not have permission to perform this action."
+        });
+      }
+      next();
+    } catch (e) {
+      return res.status(500).json({ message: "Server error verifying permissions" });
     }
-    next();
   };
 };

@@ -11,7 +11,7 @@ router.get("/", getCourses);
 
 // Professor only
 router.post("/", protect, restrictTo("professor"), createCourse);
-router.get("/my", protect, restrictTo("professor"), getMyCourses);
+router.get("/my", protect, getMyCourses);
 router.put("/:id", protect, restrictTo("professor"), updateCourse);
 router.delete("/:id", protect, restrictTo("professor"), deleteCourse);
 

@@ -16,4 +16,6 @@ router.post(
   createLesson
 );
 
+router.get("/", protect, require("../controllers/lesson.controller").getLessons);
+
 module.exports = router;

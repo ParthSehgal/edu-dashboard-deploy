@@ -81,11 +81,12 @@ exports.getSubmissionsForCourse = async (req, res, next) => {
       return res.status(404).json({ message: "Course not found" });
     }
 
-    // 2. Security Check: Is this professor the owner of the course?
-    if (course.instructor.toString() !== req.user.id) {
-      return res.status(403).json({ 
-        message: "Forbidden: You can only view submissions for your own courses." 
-      });
+    // 2. Security Check: Is this professor or TA the owner/assigned to the course?
+    if (req.user.role === 'professor' && course.instructor.toString() !== req.user.id) {
+      return res.status(403).json({ message: "Forbidden: You can only view submissions for your own courses." });
+    }
+    if (req.user.role === 'ta' && !course.tas.includes(req.user.id)) {
+      return res.status(403).json({ message: "Forbidden: You are not a TA for this course." });
     }
 
     // 3. Fetch the submissions and populate the student details

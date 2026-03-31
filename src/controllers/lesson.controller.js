@@ -38,3 +38,14 @@ exports.createLesson = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.getLessons = async (req, res, next) => {
+  try {
+    const course = await Course.findOne({ courseId: req.params.courseId });
+    if (!course) return res.status(404).json({ message: "Course not found" });
+    const lessons = await Lesson.find({ course: course._id });
+    res.status(200).json({ success: true, count: lessons.length, data: lessons });
+  } catch (error) {
+    next(error);
+  }
+};
