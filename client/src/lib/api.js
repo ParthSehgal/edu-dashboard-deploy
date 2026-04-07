@@ -35,6 +35,9 @@ export const coursesAPI = {
   searchStudents: async (id, query) => {
     return api.get(`/courses/${id}/students/search?q=${query}`);
   },
+  globalSearch: async (query) => {
+    return api.get(`/courses/global/search?q=${encodeURIComponent(query)}`);
+  },
   createCourse: async (courseData) => {
     return api.post('/courses', courseData);
   },
@@ -58,6 +61,36 @@ export const assignmentsAPI = {
   },
   getSubmissions: async (courseId) => {
     return api.get(`/courses/${courseId}/submissions`);
+  }
+};
+
+export const placementAPI = {
+  getPlacementRole: async () => {
+    return api.get('/placement/me');
+  },
+  getPosts: async (query = "", tags = "", year = "") => {
+    return api.get(`/placement/posts?q=${encodeURIComponent(query)}&tags=${encodeURIComponent(tags)}&year=${encodeURIComponent(year)}`);
+  },
+  getPostById: async (id) => {
+    return api.get(`/placement/posts/${id}`);
+  },
+  createPost: async (postData) => {
+    return api.post('/placement/posts', postData);
+  },
+  toggleUpvote: async (id) => {
+    return api.post(`/placement/posts/${id}/upvote`);
+  },
+  toggleBookmark: async (id) => {
+    return api.post(`/placement/posts/${id}/bookmark`);
+  },
+  getComments: async (postId) => {
+    return api.get(`/placement/posts/${postId}/comments`);
+  },
+  addComment: async (postId, content, parentComment = null) => {
+    return api.post(`/placement/posts/${postId}/comments`, { content, parentComment });
+  },
+  toggleCommentUpvote: async (commentId) => {
+    return api.put(`/placement/comments/${commentId}/upvote`);
   }
 };
 

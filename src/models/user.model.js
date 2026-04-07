@@ -27,8 +27,22 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["student", "ta", "professor", "alumni"], 
+      enum: ["student", "ta", "professor", "alumni"],
       required: true
+    },
+    department: {
+      type: String,
+      required: true,
+      enum: [
+        "CSE",
+        "Mech",
+        "Electrical",
+        "Data Science",
+        "Mathematics and Computing",
+        "AI",
+        "Civil",
+        "Humanities"
+      ]
     },
 
     // ── OTP VERIFICATION ───────────────────────────────────────

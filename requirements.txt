@@ -1,0 +1,5 @@
+# Backend Dependencies (navigate to /Educational-Dashboard)
+npm install xss
+
+# Frontend Dependencies (navigate to /Educational-Dashboard/client)
+npm install react-quill

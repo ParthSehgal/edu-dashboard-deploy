@@ -3,10 +3,13 @@ const router = express.Router();
 const courseController = require('../controllers/course.controller');
 const { createCourse, getCourses, getSingleCourse, enrollInCourse, updateCourse,deleteCourse,getMyCourses } = require("../controllers/course.controller");
 const { protect, restrictTo } = require("../middleware/auth.middleware");
-const { searchStudents } = require("../controllers/search.controller");
+const { searchStudents, globalSearch } = require("../controllers/search.controller");
 const lessonRouter = require("./lesson.routes");
 const submissionRouter = require("./submission.routes");
 const gradeRouter = require("./grade.routes");
+
+// Global Search (before dynamic :id)
+router.get("/global/search", protect, globalSearch);
 
 // Public
 router.get("/", getCourses);

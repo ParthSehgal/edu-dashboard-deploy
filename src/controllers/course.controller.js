@@ -1,9 +1,9 @@
 const Course = require("../models/course.model");
 const { success } = require("../utils/apiResponse");
 const courseService = require('../services/course.service');
-const Lesson = require("../models/lesson.model");           
-const Submission = require("../models/submission.model");   
-const fs = require("fs");                                   
+const Lesson = require("../models/lesson.model");
+const Submission = require("../models/submission.model");
+const fs = require("fs");
 const Grade = require("../models/grade.model");
 // 1. Get All Courses
 exports.getCourses = async (req, res, next) => {
@@ -45,17 +45,17 @@ exports.createCourse = async (req, res, next) => {
 
 // 3. Get Single Course
 exports.getSingleCourse = async (req, res, next) => {
-    try {
-        const courseId = req.params.id;
-        const course = await courseService.getCourseById(courseId);
+  try {
+    const courseId = req.params.id;
+    const course = await courseService.getCourseById(courseId);
 
-        res.status(200).json({
-            success: true,
-            data: course
-        });
-    } catch (error) {
-        next(error);
-    }
+    res.status(200).json({
+      success: true,
+      data: course
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 
@@ -67,6 +67,14 @@ exports.enrollInCourse = async (req, res, next) => {
 
     if (!course) {
       return res.status(404).json({ message: "Course not found" });
+    }
+    const User = require("../models/user.model");
+    const fullUser = await User.findById(req.user.id);
+
+    if (!fullUser || fullUser.department !== course.department) {
+      return res.status(403).json({
+        message: `Forbidden: You belong to the ${fullUser?.department || 'Unknown'} department and cannot enroll in a ${course.department} course.`
+      });
     }
 
     const alreadyEnrolled = course.students.some(
@@ -99,7 +107,7 @@ exports.enrollInCourse = async (req, res, next) => {
 exports.updateCourse = async (req, res, next) => {
   try {
     const customCourseId = req.params.id;
-    
+
     // REFACTORED: Use findOne to search by custom courseId
     let course = await Course.findOne({ courseId: customCourseId });
 
@@ -109,15 +117,15 @@ exports.updateCourse = async (req, res, next) => {
 
     // Authorization logic (Unchanged)
     if (course.instructor.toString() !== req.user.id) {
-      return res.status(403).json({ 
-        message: "Forbidden: You can only update courses that you created" 
+      return res.status(403).json({
+        message: "Forbidden: You can only update courses that you created"
       });
     }
 
     // REFACTORED: Use findOneAndUpdate instead of findByIdAndUpdate
     course = await Course.findOneAndUpdate(
-      { courseId: customCourseId }, 
-      req.body, 
+      { courseId: customCourseId },
+      req.body,
       { new: true, runValidators: true }
     );
 

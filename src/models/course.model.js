@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const courseSchema = new mongoose.Schema(
   {
     courseId: {
-      type: String,       
+      type: String,
       required: true,
       unique: true,
       uppercase: true,
@@ -18,18 +18,32 @@ const courseSchema = new mongoose.Schema(
       type: String,
       required: true
     },
+    department: {
+      type: String,
+      required: true,
+      enum: [
+        "CSE",
+        "Mech",
+        "Electrical",
+        "Data Science",
+        "Mathematics and Computing",
+        "AI",
+        "Civil",
+        "Humanities"
+      ]
+    },
     gradesPublished: {
-    type: Boolean,
-    default: false
+      type: Boolean,
+      default: false
     },
     weights: {
-    quiz1: { type: Number, default: 10 },
-    quiz2: { type: Number, default: 10 },
-    midsem: { type: Number, default: 30 },
-    endsem: { type: Number, default: 40 },
-    project: { type: Number, default: 5 },
-    misc: { type: Number, default: 5 }
-  },
+      quiz1: { type: Number, default: 10 },
+      quiz2: { type: Number, default: 10 },
+      midsem: { type: Number, default: 30 },
+      endsem: { type: Number, default: 40 },
+      project: { type: Number, default: 5 },
+      misc: { type: Number, default: 5 }
+    },
     instructor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

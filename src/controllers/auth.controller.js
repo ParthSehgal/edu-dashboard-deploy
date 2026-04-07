@@ -2,7 +2,7 @@ const User = require("../models/user.model");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { sendOTPEmail } = require("../services/email.service");
-const { getPlacementRole } = require("../middlewares/placement.middleware");
+const { getPlacementRole } = require("../middleware/placement.middleware");
 
 // ── EMAIL REGEX ────────────────────────────────────────────────
 const emailRegex = /^[a-zA-Z]+_[0-9]{4}[a-zA-Z]{2}[0-9]{2,3}@iitp\.ac\.in$/;
@@ -20,6 +20,24 @@ exports.register = async (req, res) => {
     // 1. Check all fields
     if (!name || !collegeId || !email || !password || !role) {
       return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Dynamic Department Extraction from College ID (e.g., 2401AI54 -> AI)
+    const match = collegeId.match(/[a-zA-Z]+/);
+    let department = "Unknown";
+    if (match) {
+      const code = match[0].toUpperCase();
+      const map = {
+        "EE": "Electrical",
+        "DS": "Data Science",
+        "MC": "Mathematics and Computing",
+        "ME": "Mech",
+        "CS": "CSE",
+        "AI": "AI",
+        "CE": "Civil",
+        "HS": "Humanities"
+      };
+      if (map[code]) department = map[code];
     }
 
     // 2. Validate email format
@@ -58,12 +76,19 @@ exports.register = async (req, res) => {
       email,
       password: hashedPassword,
       role,
+      department,
       otp: hashedOTP,
       otpExpiry
     });
 
     // 8. Send OTP
-    await sendOTPEmail(email, otp);
+    try {
+      await sendOTPEmail(email, otp);
+    } catch (emailError) {
+      // Rollback user creation if email fails
+      await User.findByIdAndDelete(user._id);
+      throw new Error("Failed to send OTP email. Registration was cancelled.");
+    }
 
     res.status(201).json({
       success: true,
@@ -142,7 +167,7 @@ exports.login = async (req, res) => {
 
     // ── JWT includes collegeId for placement middleware ─────────
     const token = jwt.sign(
-      { id: user._id, role: user.role, collegeId: user.collegeId },
+      { id: user._id, role: user.role, collegeId: user.collegeId, department: user.department },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );

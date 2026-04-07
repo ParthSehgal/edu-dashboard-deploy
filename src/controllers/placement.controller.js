@@ -1,5 +1,5 @@
 const { success } = require("../utils/apiResponse");
-const { getPlacementRole } = require("../middlewares/placement.middleware");
+const { getPlacementRole } = require("../middleware/placement.middleware");
 
 // GET /api/placement/test — public
 exports.test = (req, res) => {

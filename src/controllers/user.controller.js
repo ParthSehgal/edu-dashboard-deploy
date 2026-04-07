@@ -10,3 +10,17 @@ exports.getAllUsers = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.deleteUser = async (req, res, next) => {
+  try {
+    const user = await User.findByIdAndDelete(req.params.id);
+    if (!user) {
+      const error = new Error("User not found");
+      error.statusCode = 404;
+      throw error;
+    }
+    return success(res, "User deleted successfully");
+  } catch (error) {
+    next(error);
+  }
+};

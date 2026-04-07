@@ -83,3 +83,27 @@ exports.searchStudents = async (req, res, next) => {
     next(error);
   }
 };
+
+const Lesson = require("../models/lesson.model");
+exports.globalSearch = async (req, res, next) => {
+  try {
+    const query = req.query.q;
+    if (!query || query.trim() === "") {
+      return success(res, "Empty search query", { courses: [], assignments: [] });
+    }
+
+    const regex = new RegExp(query, "i");
+
+    const courses = await Course.find({
+      $or: [{ title: regex }, { description: regex }, { courseId: regex }]
+    }).populate("instructor", "name");
+
+    const assignments = await Lesson.find({
+      $or: [{ title: regex }, { description: regex }]
+    }).populate("course", "courseId title");
+
+    return success(res, "Search results fetched", { courses, assignments });
+  } catch (err) {
+    next(err);
+  }
+};
