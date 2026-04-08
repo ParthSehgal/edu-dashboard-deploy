@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { test, getMyPlacementRole } = require("../controllers/placement.controller");
+const { test, getMyPlacementRole, getBookmarkedPosts } = require("../controllers/placement.controller");
 const { protect } = require("../middleware/auth.middleware");
 const { restrictToSenior } = require("../middleware/placement.middleware");
 
@@ -35,6 +35,7 @@ router.get("/me", protect, getMyPlacementRole);
 
 // Global Read & Engagement (All roles)
 router.get("/posts", protect, getPublishedPosts);
+router.get("/posts/bookmarked", protect, getBookmarkedPosts);
 router.get("/posts/:id", protect, getPostById);
 router.post("/posts/:id/upvote", protect, toggleUpvote);
 router.post("/posts/:id/bookmark", protect, toggleBookmark);

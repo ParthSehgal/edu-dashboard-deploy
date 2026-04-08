@@ -23,6 +23,10 @@ const submissionSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Course",
       required: true
+    },
+    evaluatedScore: {
+      type: Number,
+      default: null,
     }
   },
   { timestamps: true }

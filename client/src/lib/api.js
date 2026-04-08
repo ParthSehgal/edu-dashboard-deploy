@@ -71,6 +71,9 @@ export const placementAPI = {
   getPosts: async (query = "", tags = "", year = "") => {
     return api.get(`/placement/posts?q=${encodeURIComponent(query)}&tags=${encodeURIComponent(tags)}&year=${encodeURIComponent(year)}`);
   },
+  getBookmarkedPosts: async () => {
+    return api.get('/placement/posts/bookmarked');
+  },
   getPostById: async (id) => {
     return api.get(`/placement/posts/${id}`);
   },
@@ -91,6 +94,21 @@ export const placementAPI = {
   },
   toggleCommentUpvote: async (commentId) => {
     return api.put(`/placement/comments/${commentId}/upvote`);
+  }
+};
+
+export const userAPI = {
+  getMe: async () => {
+    return api.get('/users/me');
+  },
+  updateProfile: async (profileData) => {
+    return api.put('/users/me', profileData);
+  },
+  updatePassword: async (oldPassword, newPassword) => {
+    return api.put('/users/me/password', { oldPassword, newPassword });
+  },
+  getTranscript: async () => {
+    return api.get('/users/me/transcript');
   }
 };
 
