@@ -269,6 +269,11 @@ exports.getPublishedPosts = async (req, res, next) => {
 exports.getPostById = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const mongoose = require("mongoose");
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid Post ID format" });
+    }
+
     const post = await PlacementPost.findById(id).populate("author", "name collegeId email");
     
     if (!post) {

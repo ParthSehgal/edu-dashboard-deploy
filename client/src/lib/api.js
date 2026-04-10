@@ -132,6 +132,42 @@ export const developmentAPI = {
   },
   toggleCompletion: async (questionId) => {
     return api.post(`/placement/development/questions/${questionId}/toggle`);
+<<<<<<< HEAD
+=======
+  }
+};
+
+export const contestAPI = {
+  getContests: async () => {
+    return api.get('/placement/contests');
+  },
+  addContest: async (contestData) => {
+    return api.post('/placement/contests', contestData);
+  },
+  getContestById: async (id) => {
+    return api.get(`/placement/contests/${id}`);
+  },
+  addContestDiscussion: async (id, message) => {
+    return api.post(`/placement/contests/${id}/discussion`, { message });
+  },
+  deleteContest: async (id) => {
+    return api.delete(`/placement/contests/${id}`);
+  }
+};
+
+export const mockOaAPI = {
+  getOAs: async () => {
+    return api.get('/placement/mock-oa');
+  },
+  addOA: async (oaData) => {
+    return api.post('/placement/mock-oa', oaData);
+  },
+  uploadResults: async (id, studentsData) => {
+    return api.put(`/placement/mock-oa/${id}/results`, studentsData);
+  },
+  deleteOA: async (id) => {
+    return api.delete(`/placement/mock-oa/${id}`);
+>>>>>>> c6f7103426369fb7cc70487ef953e4a9376ef230
   }
 };
 
