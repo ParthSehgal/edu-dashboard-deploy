@@ -2,15 +2,19 @@ const Grade = require("../models/grade.model");
 const Course = require("../models/course.model");
 const { success } = require("../utils/apiResponse");
 
+const User = require("../models/user.model");
+const xlsx = require("xlsx");
+const fs = require("fs");
+
 //calculate final score
-const calculateFinalScore = (components, weights) => {
+const calculateFinalScore = (components, weights, totalMarks) => {
   let totalScore = 0;
-  const keys = ["quiz1", "quiz2", "midsem", "endsem", "attendance", "misc"];
+  const keys = ["quiz1", "quiz2", "midsem", "endsem", "project", "misc"];
   
   keys.forEach(key => {
     if (components[key] !== null && components[key] !== undefined) {
-      // (Component Score / 100) * Weight Percentage
-      totalScore += (components[key] / 100) * weights[key];
+      const maxMarks = totalMarks && totalMarks[key] ? totalMarks[key] : 100;
+      totalScore += (components[key] / maxMarks) * weights[key];
     }
   });
   
@@ -69,7 +73,7 @@ exports.updateComponents = async (req, res, next) => {
       }
     });
 
-    gradeSheet.finalScore = calculateFinalScore(gradeSheet.components, course.weights);
+    gradeSheet.finalScore = calculateFinalScore(gradeSheet.components, course.weights, course.totalMarks);
 
     if (updateMessages.length > 0) {
       gradeSheet.auditLog.push({
@@ -195,7 +199,7 @@ exports.exportGradesCSV = async (req, res, next) => {
       Quiz2: g.components.quiz2 || 0,
       Midsem: g.components.midsem || 0,
       Endsem: g.components.endsem || 0,
-      Attendance: g.components.attendance || 0,
+      Project: g.components.project || 0,
       Misc: g.components.misc || 0,
       CalculatedScore: g.finalScore || 0,
       OfficialFinalGrade: g.finalGrade || ""
@@ -212,42 +216,87 @@ exports.exportGradesCSV = async (req, res, next) => {
   }
 };
 
-// Import Grades from CSV
+// Import Grades from CSV or Excel
 exports.importGradesCSV = async (req, res, next) => {
   try {
-    if (!req.file) return res.status(400).json({ message: "Please upload a CSV file" });
+    if (!req.file) return res.status(400).json({ message: "Please upload a valid file" });
+    
+    // Check limit (2MB)
+    if (req.file.size > 2 * 1024 * 1024) {
+      fs.unlinkSync(req.file.path);
+      return res.status(400).json({ message: "File exceeds 2MB limit" });
+    }
     
     const course = await Course.findOne({ courseId: req.params.courseId });
-    if (course.instructor.toString() !== req.user.id) return res.status(403).json({ message: "Forbidden" });
-
-    // Parse CSV to JSON
-    const gradeData = await csv().fromFile(req.file.path);
-
-    // Loop through CSV rows and update database
-    for (let row of gradeData) {
-      if (row.StudentID) {
-        const gradeSheet = await Grade.findOne({ course: course._id, student: row.StudentID });
-        if (gradeSheet) {
-          gradeSheet.components = {
-            quiz1: Number(row.Quiz1), quiz2: Number(row.Quiz2),
-            midsem: Number(row.Midsem), endsem: Number(row.Endsem),
-            attendance: Number(row.Attendance), misc: Number(row.Misc)
-          };
-          gradeSheet.finalGrade = row.OfficialFinalGrade || null;
-          gradeSheet.finalScore = calculateFinalScore(gradeSheet.components, course.weights);
-          
-          gradeSheet.auditLog.push({
-            updatedBy: req.user.id,
-            role: "professor",
-            action: "Bulk updated via CSV Import"
-          });
-          await gradeSheet.save();
-        }
-      }
+    if (course.instructor.toString() !== req.user.id) {
+       fs.unlinkSync(req.file.path);
+       return res.status(403).json({ message: "Forbidden" });
     }
 
-    return success(res, "Grades successfully imported and recalculated from CSV");
+    // Parse CSV or Excel to JSON string -> Object
+    const workbook = xlsx.readFile(req.file.path);
+    const sheetName = workbook.SheetNames[0];
+    const rawGradeData = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
+
+    // Normalize headers (trim spaces, lower case for standard mapping)
+    const gradeData = rawGradeData.map(row => {
+      const normalizedRow = {};
+      for (const key in row) {
+        // e.g., "Misc " -> "misc", "Quiz 1" -> "quiz1"
+        const cleanKey = key.trim().toLowerCase().replace(/\s+/g, '');
+        normalizedRow[cleanKey] = row[key];
+      }
+      return normalizedRow;
+    });
+
+    // Loop through rows and update database
+    let importCount = 0;
+    
+    for (let row of gradeData) {
+      let gradeSheet = null;
+      
+      const studentIdMatch = row.studentid || row.id;
+      if (studentIdMatch) {
+        gradeSheet = await Grade.findOne({ course: course._id, student: studentIdMatch });
+      }
+      
+      // Fallback to RollNumber or Student
+      const rollMatch = row.rollnumber || row.student || row.roll || row.collegeid;
+      if (!gradeSheet && rollMatch) {
+         const user = await User.findOne({ collegeId: String(rollMatch).trim() });
+         if (user) {
+            gradeSheet = await Grade.findOne({ course: course._id, student: user._id });
+         }
+      }
+      
+      if (gradeSheet) {
+        gradeSheet.components = {
+          quiz1: Number(row.quiz1) || 0, 
+          quiz2: Number(row.quiz2) || 0,
+          midsem: Number(row.midsem) || 0, 
+          endsem: Number(row.endsem) || 0,
+          project: Number(row.project) || 0, 
+          misc: Number(row.misc) || 0
+        };
+        gradeSheet.finalGrade = row.officialfinalgrade || row.finalgrade || null;
+        gradeSheet.finalScore = calculateFinalScore(gradeSheet.components, course.weights, course.totalMarks);
+        
+        gradeSheet.auditLog.push({
+          updatedBy: req.user.id,
+          role: "professor",
+          action: "Bulk updated via Excel/CSV Import"
+        });
+        await gradeSheet.save();
+        importCount++;
+      }
+    }
+    
+    fs.unlinkSync(req.file.path); // Clean up file
+    return success(res, `${importCount} grades successfully imported and recalculated`);
   } catch (error) {
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
     next(error);
   }
 };

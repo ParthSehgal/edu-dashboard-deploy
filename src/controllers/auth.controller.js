@@ -5,7 +5,7 @@ const { sendOTPEmail } = require("../services/email.service");
 const { getPlacementRole } = require("../middleware/placement.middleware");
 
 // ── EMAIL REGEX ────────────────────────────────────────────────
-const emailRegex = /^[a-zA-Z]+_[0-9]{4}[a-zA-Z]{2}[0-9]{2,3}@iitp\.ac\.in$/;
+const emailRegex = /^[a-zA-Z0-9.]+_[0-9]{4}[a-zA-Z]{2,3}[0-9]{2,4}@iitp\.ac\.in$/i;
 
 // ── GENERATE 4 DIGIT OTP ───────────────────────────────────────
 const generateOTP = () => {
@@ -15,33 +15,51 @@ const generateOTP = () => {
 // ── REGISTER ───────────────────────────────────────────────────
 exports.register = async (req, res) => {
   try {
-    const { name, collegeId, email, password, role } = req.body;
+    console.log("Registration Request Body:", req.body);
+    let { name, collegeId, email, password, role, department: bodyDepartment } = req.body;
+
+    // Standardize input
+    if (email) email = email.toLowerCase().trim();
+    if (role) role = role.toLowerCase().trim();
+    if (collegeId) collegeId = collegeId.toUpperCase().trim();
 
     // 1. Check all fields
     if (!name || !collegeId || !email || !password || !role) {
+      console.log("Registration failed: Missing fields", { name, collegeId, email, role });
       return res.status(400).json({ message: "All fields are required" });
     }
 
     // Dynamic Department Extraction from College ID (e.g., 2401AI54 -> AI)
-    const match = collegeId.match(/[a-zA-Z]+/);
     let department = "Unknown";
-    if (match) {
-      const code = match[0].toUpperCase();
-      const map = {
-        "EE": "Electrical Engineering",
-        "DS": "Data Science",
-        "MC": "Mathematics and Computing",
-        "ME": "Mechanical Engineering",
-        "CS": "Computer Science",
-        "AI": "Artificial Intelligence",
-        "CE": "Civil Engineering",
-        "HS": "Humanities and Social Sciences"
-      };
-      if (map[code]) department = map[code];
+    if (role === "professor" && bodyDepartment) {
+      department = bodyDepartment;
+    } else {
+      const match = collegeId.match(/[a-zA-Z]+/);
+      if (match) {
+        const code = match[0].toUpperCase();
+        const map = {
+          "EE": "Electrical",
+          "DS": "Data Science",
+          "MC": "Mathematics and Computing",
+          "ME": "Mech",
+          "MECH": "Mech",
+          "CS": "CSE",
+          "CSE": "CSE",
+          "AI": "AI",
+          "CE": "Civil",
+          "CIVIL": "Civil",
+          "HS": "Humanities"
+        };
+        if (map[code]) department = map[code];
+      }
     }
 
-    // 2. Validate email format
-    if (!emailRegex.test(email)) {
+    // 2. Validate email format (skip strict regex for professors)
+    const matchesRegex = emailRegex.test(email);
+    console.log(`Email check: role=${role}, email=${email}, matchesRegex=${matchesRegex}`);
+    
+    if (role !== "professor" && !matchesRegex) {
+      console.log("Registration failed: Invalid email format check triggered");
       return res.status(400).json({
         message: "Invalid email. Must be in format: name_2401ai54@iitp.ac.in"
       });
@@ -58,6 +76,7 @@ exports.register = async (req, res) => {
     // 4. Check duplicate
     const userExists = await User.findOne({ $or: [{ email }, { collegeId }] });
     if (userExists) {
+      console.log("Registration failed: User already exists", { email, collegeId });
       return res.status(400).json({ message: "User already exists" });
     }
 

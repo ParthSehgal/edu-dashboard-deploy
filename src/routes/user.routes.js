@@ -7,7 +7,8 @@ const {
   getMe,
   updateProfile,
   updatePassword,
-  getTranscript
+  getTranscript,
+  getCourseArchive
 } = require("../controllers/user.controller");
 const { protect, restrictTo } = require("../middleware/auth.middleware");
 
@@ -16,6 +17,8 @@ router.get("/me", protect, getMe);
 router.put("/me", protect, updateProfile);
 router.put("/me/password", protect, updatePassword);
 router.get("/me/transcript", protect, getTranscript);
+router.get("/me/faculty-profile", protect, restrictTo("professor"), getMe); // alias with full data
+router.get("/me/course-archive", protect, restrictTo("professor"), getCourseArchive);
 
 // Admin / Prof / TA routes
 router.get("/", protect, restrictTo("professor", "ta"), getAllUsers);

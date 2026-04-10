@@ -40,17 +40,30 @@ exports.getMe = async (req, res, next) => {
   }
 };
 
-// ── UPDATE LOGGED IN USER PROFILE ──────────────────────────────
+// ── UPDATE LOGGED IN USER PROFILE ───────────────────────────
 exports.updateProfile = async (req, res, next) => {
   try {
-    const { bio, socialLinks, targetRoles, emailNotifications } = req.body;
+    const {
+      bio, socialLinks, targetRoles, emailNotifications,
+      // Faculty fields
+      academicTitle, researchInterests, officeLocation, officeHours,
+      scholarLink, personalWebsite, notifications
+    } = req.body;
     
-    // Build update object
+    // Build update object (only include defined fields)
     const updateFields = {};
     if (bio !== undefined) updateFields.bio = bio;
     if (socialLinks !== undefined) updateFields.socialLinks = socialLinks;
     if (targetRoles !== undefined) updateFields.targetRoles = targetRoles;
     if (emailNotifications !== undefined) updateFields.emailNotifications = emailNotifications;
+    // Professor fields
+    if (academicTitle !== undefined) updateFields.academicTitle = academicTitle;
+    if (researchInterests !== undefined) updateFields.researchInterests = researchInterests;
+    if (officeLocation !== undefined) updateFields.officeLocation = officeLocation;
+    if (officeHours !== undefined) updateFields.officeHours = officeHours;
+    if (scholarLink !== undefined) updateFields.scholarLink = scholarLink;
+    if (personalWebsite !== undefined) updateFields.personalWebsite = personalWebsite;
+    if (notifications !== undefined) updateFields.notifications = notifications;
 
     const user = await User.findByIdAndUpdate(
       req.user.id,
@@ -59,6 +72,27 @@ exports.updateProfile = async (req, res, next) => {
     ).select("-password -otp -otpExpiry");
 
     return success(res, "Profile updated successfully", user);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ── GET COURSE TEACHING ARCHIVE (Professor only) ───────────────
+exports.getCourseArchive = async (req, res, next) => {
+  try {
+    const Course = require("../models/course.model");
+    const courses = await Course.find({ instructor: req.user.id })
+      .select("courseId title students createdAt")
+      .sort({ createdAt: -1 });
+
+    const archive = courses.map(c => ({
+      courseId: c.courseId,
+      title: c.title,
+      totalStudents: c.students?.length || 0,
+      semester: new Date(c.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "long" })
+    }));
+
+    return success(res, "Course archive fetched", archive);
   } catch (error) {
     next(error);
   }

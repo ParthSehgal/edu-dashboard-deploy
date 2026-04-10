@@ -44,6 +44,14 @@ const courseSchema = new mongoose.Schema(
       project: { type: Number, default: 5 },
       misc: { type: Number, default: 5 }
     },
+    totalMarks: {
+      quiz1: { type: Number, default: 100 },
+      quiz2: { type: Number, default: 100 },
+      midsem: { type: Number, default: 100 },
+      endsem: { type: Number, default: 100 },
+      project: { type: Number, default: 100 },
+      misc: { type: Number, default: 100 }
+    },
     instructor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

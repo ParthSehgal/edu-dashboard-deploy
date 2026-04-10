@@ -19,6 +19,7 @@ export default function RegisterPage() {
     email: "",
     password: "",
     role: "student",
+    department: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -35,7 +36,8 @@ export default function RegisterPage() {
         formData.collegeId,
         formData.email,
         formData.password,
-        formData.role   // ← send role directly including "alumni"
+        formData.role,
+        formData.role === "professor" ? formData.department : undefined
       );
 
       router.push(`/verify-otp?email=${encodeURIComponent(formData.email)}`);
@@ -100,6 +102,29 @@ export default function RegisterPage() {
               </div>
             )}
           </div>
+
+          {formData.role === "professor" && (
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Department</label>
+              <select
+                value={formData.department}
+                onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500"
+                required
+              >
+                <option value="" disabled>Select Department</option>
+                <option value="CSE">CSE</option>
+                <option value="Mech">Mechanical Engineering</option>
+                <option value="Electrical">Electrical</option>
+                <option value="Data Science">Data Science</option>
+                <option value="Mathematics and Computing">Mathematics and Computing</option>
+                <option value="AI">AI</option>
+                <option value="Civil">Civil</option>
+                <option value="Humanities">Humanities</option>
+                <option value="Unknown">Other / Unknown</option>
+              </select>
+            </div>
+          )}
 
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-2">Full Name</label>

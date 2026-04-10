@@ -5,6 +5,7 @@ import DashboardLayout from "@/components/Layout/DashboardLayout";
 import { coursesAPI, assignmentsAPI } from "@/lib/api";
 import { Search, Users, Calendar, ArrowLeft, FilePlus, CheckCircle } from "lucide-react";
 import Link from "next/link";
+import GradesManager from "@/components/Dashboard/Professor/GradesManager";
 
 export default function ProfessorCourseDetail({ params }) {
   const [course, setCourse] = useState(null);
@@ -31,19 +32,27 @@ export default function ProfessorCourseDetail({ params }) {
       try {
         const p = await Promise.resolve(params); 
         setCourseCode(p.id);
-        const res = await coursesAPI.getCourse(p.id);
-        setCourse(res.data.data);
-        
+        fetchCourse(p.id);
         loadAssignments(p.id);
         loadSubmissions(p.id);
       } catch (err) {
         console.error(err);
-      } finally {
         setLoading(false);
       }
     };
     run();
   }, [params]);
+
+  const fetchCourse = async (cid) => {
+    try {
+      const res = await coursesAPI.getCourse(cid);
+      setCourse(res.data.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const loadAssignments = async (cid) => {
     try {
@@ -289,6 +298,14 @@ export default function ProfessorCourseDetail({ params }) {
             ))}
           </div>
         </div>
+      </div>
+
+      <div className="mt-8">
+        <GradesManager 
+          course={course} 
+          isPublished={course.gradesPublished} 
+          onCourseUpdated={() => fetchCourse(courseCode)}
+        />
       </div>
     </DashboardLayout>
   );

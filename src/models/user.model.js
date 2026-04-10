@@ -90,6 +90,39 @@ const userSchema = new mongoose.Schema(
       github: { type: String, default: "" },
       portfolio: { type: String, default: "" }
     },
+
+    // ── PROFESSOR FACULTY PROFILE FIELDS ─────────────────────
+    academicTitle: {
+      type: String,
+      default: "Professor"
+    },
+    researchInterests: [
+      { type: String, trim: true }
+    ],
+    officeLocation: {
+      type: String,
+      default: ""
+    },
+    officeHours: [
+      {
+        day: { type: String },       // e.g. "Monday"
+        from: { type: String },      // e.g. "10:00 AM"
+        to: { type: String }         // e.g. "12:00 PM"
+      }
+    ],
+    scholarLink: {
+      type: String,
+      default: ""
+    },
+    personalWebsite: {
+      type: String,
+      default: ""
+    },
+    notifications: {
+      taGradeSubmit:           { type: Boolean, default: true },
+      weeklyPerformanceSummary:{ type: Boolean, default: true }
+    },
+
     targetRoles: [
       {
         type: String,

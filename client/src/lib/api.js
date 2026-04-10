@@ -16,8 +16,8 @@ export const authAPI = {
   login: async (collegeId, password) => {
     return api.post('/auth/login', { collegeId, password });
   },
-  register: async (name, collegeId, email, password, role) => {
-    return api.post('/auth/register', { name, collegeId, email, password, role });
+  register: async (name, collegeId, email, password, role, department) => {
+    return api.post('/auth/register', { name, collegeId, email, password, role, department });
   },
   verifyOTP: async (email, otp) => {
     return api.post('/auth/verify-otp', { email, otp });
@@ -45,6 +45,9 @@ export const coursesAPI = {
   },
   enrollInCourse: async (id) => {
     return api.post(`/courses/${id}/enroll`);
+  },
+  updateCourse: async (id, courseData) => {
+    return api.put(`/courses/${id}`, courseData);
   }
 };
 
@@ -60,6 +63,29 @@ export const assignmentsAPI = {
   },
   getSubmissions: async (courseId) => {
     return api.get(`/courses/${courseId}/submissions`);
+  }
+};
+
+export const gradesAPI = {
+  getCourseGrades: async (courseId) => {
+    return api.get(`/courses/${courseId}/grades`);
+  },
+  exportGrades: async (courseId) => {
+    return api.get(`/courses/${courseId}/grades/export`, { responseType: 'blob' });
+  },
+  importGrades: async (courseId, formData) => {
+    return api.post(`/courses/${courseId}/grades/import`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  },
+  updateComponents: async (courseId, studentId, components) => {
+    return api.put(`/courses/${courseId}/grades/${studentId}/components`, components);
+  },
+  updateFinalGrade: async (courseId, studentId, finalGrade) => {
+    return api.put(`/courses/${courseId}/grades/${studentId}/final`, { finalGrade });
+  },
+  publishGrades: async (courseId) => {
+    return api.patch(`/courses/${courseId}/grades/publish`);
   }
 };
 
@@ -111,6 +137,21 @@ export const userAPI = {
   }
 };
 
+export const facultyAPI = {
+  getProfile: async () => {
+    return api.get('/users/me/faculty-profile');
+  },
+  updateProfile: async (profileData) => {
+    return api.put('/users/me', profileData);
+  },
+  getCourseArchive: async () => {
+    return api.get('/users/me/course-archive');
+  },
+  changePassword: async (oldPassword, newPassword) => {
+    return api.put('/users/me/password', { oldPassword, newPassword });
+  }
+};
+
 export const dsaAPI = {
   getQuestions: async () => {
     return api.get('/placement/dsa/questions');
@@ -132,8 +173,7 @@ export const developmentAPI = {
   },
   toggleCompletion: async (questionId) => {
     return api.post(`/placement/development/questions/${questionId}/toggle`);
-<<<<<<< HEAD
-=======
+
   }
 };
 
@@ -167,7 +207,6 @@ export const mockOaAPI = {
   },
   deleteOA: async (id) => {
     return api.delete(`/placement/mock-oa/${id}`);
->>>>>>> c6f7103426369fb7cc70487ef953e4a9376ef230
   }
 };
 

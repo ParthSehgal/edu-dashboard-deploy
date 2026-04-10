@@ -42,6 +42,8 @@ export default function ProfileHub() {
 
   if (!user) return null;
 
+  const isProfessor = user.role === "professor";
+
   return (
     <DashboardLayout requiredRole="">
       <div className="max-w-[1600px] mx-auto min-h-[calc(100vh-4rem)] bg-[#fcfaf7]">
@@ -90,22 +92,25 @@ export default function ProfileHub() {
             <BookOpen className="w-4 h-4" /> Transcript
           </button>
 
-          <button
-            onClick={() => setActiveTab("bookmarks")}
-            className={`px-6 py-2.5 text-sm font-bold uppercase tracking-wider transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === "bookmarks"
-                ? "text-[#2d2a26] border-b-2 border-[#2d2a26]"
-                : "text-[#a99c85] hover:text-[#2d2a26]"
-              }`}
-          >
-            <Bookmark className="w-4 h-4" /> Saved
-          </button>
+          {/* Only show Saved Bookmarks tab for non-professors */}
+          {!isProfessor && (
+            <button
+              onClick={() => setActiveTab("bookmarks")}
+              className={`px-6 py-2.5 text-sm font-bold uppercase tracking-wider transition-colors flex items-center gap-2 whitespace-nowrap ${activeTab === "bookmarks"
+                  ? "text-[#2d2a26] border-b-2 border-[#2d2a26]"
+                  : "text-[#a99c85] hover:text-[#2d2a26]"
+                }`}
+            >
+              <Bookmark className="w-4 h-4" /> Saved
+            </button>
+          )}
         </div>
 
         {/* Tab Content */}
         <div className="mb-12">
           {activeTab === "identity" && <IdentitySettings user={user} setUser={setUser} />}
           {activeTab === "transcript" && <AcademicTranscript user={user} />}
-          {activeTab === "bookmarks" && <SavedBookmarks />}
+          {activeTab === "bookmarks" && !isProfessor && <SavedBookmarks />}
         </div>
 
       </div>

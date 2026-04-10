@@ -14,13 +14,14 @@ const storage = multer.diskStorage({
 // The security filter
 const fileFilter = (req, file, cb) => {
   // 1. Define the allowed extensions (Regex)
-  const allowedFileTypes = /jpeg|jpg|png|pdf|doc|docx|ppt|pptx|zip|csv|rar|7z/;
+  const allowedFileTypes = /jpeg|jpg|png|pdf|doc|docx|ppt|pptx|zip|csv|rar|7z|xlsx|xls/;
   
   // 2. Check the file extension
   const extname = allowedFileTypes.test(path.extname(file.originalname).toLowerCase());
   
-  // 3. Check the MIME type (what the file actually is inside)
-  const mimetype = allowedFileTypes.test(file.mimetype);
+  // 3. Bypass MIME check for known spreadsheet formats that can have arbitrary XML-based MIME types
+  const isSpreadsheet = /xlsx|xls|csv/.test(path.extname(file.originalname).toLowerCase());
+  const mimetype = isSpreadsheet ? true : allowedFileTypes.test(file.mimetype);
 
   if (extname && mimetype) {
     return cb(null, true); // Accept the file

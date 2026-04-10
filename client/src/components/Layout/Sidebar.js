@@ -12,8 +12,7 @@ export default function Sidebar({ role }) {
     professor: [
       { name: "Dashboard", href: "/dashboard/professor", icon: LayoutDashboard },
       { name: "Class Schedule", href: "/dashboard/schedule", icon: Calendar },
-      { name: "Placements", href: "/dashboard/placements", icon: Briefcase },
-      { name: "Profile", href: "/dashboard/profile", icon: UserIcon }
+      { name: "Profile", href: "/dashboard/professor/profile", icon: UserIcon }
     ],
     student: [
       { name: "Dashboard", href: "/dashboard/student", icon: LayoutDashboard },
