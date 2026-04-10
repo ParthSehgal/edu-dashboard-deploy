@@ -59,7 +59,7 @@ const userSchema = new mongoose.Schema(
       type: Date,          // OTP expires after 5 minutes
       default: null
     },
-<<<<<<< HEAD
+
 
     // Used to denote if a Student is a Class Representative 
     // This allows them to upload branch schedules
@@ -96,9 +96,7 @@ const userSchema = new mongoose.Schema(
         trim: true
       }],
 
-=======
     // ── ROADMAP PROGRESS ───────────────────────────────────────
->>>>>>> c6f7103426369fb7cc70487ef953e4a9376ef230
     completedRoadmapQuestions: [
       {
         type: mongoose.Schema.Types.ObjectId,
