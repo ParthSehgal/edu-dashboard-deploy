@@ -28,14 +28,14 @@ exports.register = async (req, res) => {
     if (match) {
       const code = match[0].toUpperCase();
       const map = {
-        "EE": "Electrical",
+        "EE": "Electrical Engineering",
         "DS": "Data Science",
         "MC": "Mathematics and Computing",
-        "ME": "Mech",
-        "CS": "CSE",
-        "AI": "AI",
-        "CE": "Civil",
-        "HS": "Humanities"
+        "ME": "Mechanical Engineering",
+        "CS": "Computer Science",
+        "AI": "Artificial Intelligence",
+        "CE": "Civil Engineering",
+        "HS": "Humanities and Social Sciences"
       };
       if (map[code]) department = map[code];
     }

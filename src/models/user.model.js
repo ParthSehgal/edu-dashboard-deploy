@@ -58,7 +58,49 @@ const userSchema = new mongoose.Schema(
     otpExpiry: {
       type: Date,          // OTP expires after 5 minutes
       default: null
-    }
+    },
+
+    // Used to denote if a Student is a Class Representative 
+    // This allows them to upload branch schedules
+    isCR: {
+      type: Boolean,
+      default: false
+    },
+    
+    // ── PROFILE PREFERENCES & ACADEMICS ────────────────────────
+    emailNotifications: {
+      type: Boolean,
+      default: true
+    },
+    cgpa: {
+      type: Number,
+      default: 0
+    },
+    totalCreditsEarned: {
+      type: Number,
+      default: 0
+    },
+    bio: {
+      type: String,
+      default: ""
+    },
+    socialLinks: {
+      linkedin: { type: String, default: "" },
+      github: { type: String, default: "" },
+      portfolio: { type: String, default: "" }
+    },
+    targetRoles: [
+      {
+        type: String,
+        trim: true
+      }],
+
+    completedRoadmapQuestions: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "RoadmapQuestion"
+      }
+    ]
   },
   { timestamps: true }
 );
