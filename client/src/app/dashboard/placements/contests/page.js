@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/Layout/DashboardLayout";
 import { placementAPI, contestAPI } from "@/lib/api";
-import { Trophy, Plus, Clock, ExternalLink, X, ChevronLeft, Calendar } from "lucide-react";
+import { Trophy, Plus, Clock, ExternalLink, X, ChevronLeft, Calendar, Trash2, Timer } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -18,7 +18,7 @@ export default function ContestsHub() {
   const [showContestModal, setShowContestModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [newContest, setNewContest] = useState({
-    title: "", platform: "LeetCode", link: "", startTime: ""
+    title: "", platform: "LeetCode", link: "", startTime: "", endTime: ""
   });
 
   const fetchData = async () => {
@@ -30,7 +30,10 @@ export default function ContestsHub() {
       ]);
       
       if (roleRes.data?.data?.placementRole) setRole(roleRes.data.data.placementRole);
-      setContests(contestRes.data?.data || []);
+      const raw = contestRes.data?.data || [];
+      // Most recently added contest first
+      const sorted = [...raw].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      setContests(sorted);
     } catch (err) {
       console.error(err);
     } finally {
@@ -50,16 +53,29 @@ export default function ContestsHub() {
         title: newContest.title,
         platform: newContest.platform,
         link: newContest.link,
-        startTime: new Date(newContest.startTime).toISOString()
+        startTime: new Date(newContest.startTime).toISOString(),
+        endTime: new Date(newContest.endTime).toISOString()
       });
       setShowContestModal(false);
-      setNewContest({ title: "", platform: "LeetCode", link: "", startTime: "" });
+      setNewContest({ title: "", platform: "LeetCode", link: "", startTime: "", endTime: "" });
       fetchData(); // Refresh contests
     } catch (err) {
       console.error(err);
       alert("Failed to add contest. Make sure you are a Senior.");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteContest = async (id) => {
+    if (confirm("Are you sure you want to delete this contest?")) {
+      try {
+        await contestAPI.deleteContest(id);
+        fetchData();
+      } catch (err) {
+        console.error("Failed to delete contest", err);
+        alert("Failed to delete contest");
+      }
     }
   };
 
@@ -98,35 +114,65 @@ export default function ContestsHub() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {contests.map((c) => {
-             const contestDate = new Date(c.startTime);
-             const isHappeningNow = contestDate < new Date();
-             
-             return (
-               <a key={c._id} href={c.link} target="_blank" rel="noopener noreferrer" className="block h-full group">
-                  <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-amber-200 transition-all duration-300 relative overflow-hidden h-[250px] flex flex-col">
-                    
-                    {isHappeningNow && (
-                      <div className="absolute top-0 right-0 w-2 h-2 rounded-full bg-red-500 animate-ping mt-6 mr-6"></div>
-                    )}
-                    
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-slate-200 to-slate-100 group-hover:from-amber-400 group-hover:to-orange-500 transition-all duration-500"></div>
+              const now = new Date();
+              const startDate = new Date(c.startTime);
+              const endDate = new Date(c.endTime);
+              const isUpcoming = now < startDate;
+              const isLive = now >= startDate && now <= endDate;
+              const isEnded = now > endDate;
 
-                    <div className="flex justify-between items-start mb-6 pt-2">
-                       <span className="text-xs font-black uppercase tracking-wider px-3 py-1 bg-slate-100 group-hover:bg-amber-100 text-slate-500 group-hover:text-amber-700 rounded-full transition-colors">{c.platform}</span>
-                       {isHappeningNow && <span className="text-[10px] bg-red-50 text-red-600 px-2.5 py-1 rounded-lg border border-red-100 font-black">LIVE NOW</span>}
-                    </div>
+              // Calculate duration
+              const durationMs = endDate - startDate;
+              const durationHrs = Math.floor(durationMs / (1000 * 60 * 60));
+              const durationMins = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+              const durationStr = durationHrs > 0 ? `${durationHrs}h ${durationMins}m` : `${durationMins}m`;
+              
+              return (
+                <Link key={c._id} href={`/dashboard/placements/contests/${c._id}`} className="block h-full group">
+                   <div className={`bg-white p-6 rounded-3xl border shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden h-[280px] flex flex-col ${
+                     isLive ? 'border-red-200 hover:border-red-300' : isEnded ? 'border-slate-100 opacity-75 hover:opacity-100 hover:border-slate-200' : 'border-slate-100 hover:border-amber-200'
+                   }`}>
+                     
+                     {isLive && (
+                       <div className="absolute top-0 right-0 w-2 h-2 rounded-full bg-red-500 animate-ping mt-6 mr-6"></div>
+                     )}
+                     
+                     <div className={`absolute top-0 left-0 w-full h-1 transition-all duration-500 ${
+                       isLive ? 'bg-gradient-to-r from-red-400 to-orange-500' : isEnded ? 'bg-gradient-to-r from-slate-300 to-slate-200' : 'bg-gradient-to-r from-slate-200 to-slate-100 group-hover:from-amber-400 group-hover:to-orange-500'
+                     }`}></div>
 
-                    <h3 className="text-xl font-bold text-slate-800 leading-tight mb-2 group-hover:text-amber-600 transition-colors line-clamp-2">{c.title}</h3>
-                    
-                    <div className="mt-auto pt-5 border-t border-slate-50 flex flex-col gap-3">
-                       <div className="flex items-center gap-2 text-sm font-semibold text-slate-600 bg-slate-50 p-3 rounded-xl">
-                          <Calendar className="w-5 h-5 text-amber-500" /> 
-                          {contestDate.toLocaleString("en-US", { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric' })}
-                       </div>
-                    </div>
-                  </div>
-               </a>
-             )
+                     <div className="flex justify-between items-start mb-4 pt-2">
+                        <span className="text-xs font-black uppercase tracking-wider px-3 py-1 bg-slate-100 group-hover:bg-amber-100 text-slate-500 group-hover:text-amber-700 rounded-full transition-colors">{c.platform}</span>
+                        {isLive && <span className="text-[10px] bg-red-50 text-red-600 px-2.5 py-1 rounded-lg border border-red-100 font-black animate-pulse">LIVE NOW</span>}
+                        {isUpcoming && <span className="text-[10px] bg-emerald-50 text-emerald-600 px-2.5 py-1 rounded-lg border border-emerald-100 font-black">UPCOMING</span>}
+                        {isEnded && <span className="text-[10px] bg-slate-100 text-slate-500 px-2.5 py-1 rounded-lg border border-slate-200 font-black">ENDED</span>}
+                     </div>
+
+                     <h3 className="text-xl font-bold text-slate-800 leading-tight mb-2 group-hover:text-amber-600 transition-colors line-clamp-2">{c.title}</h3>
+                     
+                     <div className="mt-auto pt-4 border-t border-slate-50 flex flex-col gap-2 relative">
+                        <div className="flex items-center gap-2 text-sm font-semibold text-slate-600 bg-slate-50 p-2.5 rounded-xl">
+                           <Calendar className="w-4 h-4 text-amber-500 flex-shrink-0" /> 
+                           <span className="truncate">{startDate.toLocaleString("en-US", { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric' })}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm font-semibold text-slate-500 bg-slate-50 p-2.5 rounded-xl pr-14">
+                           <Timer className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                           <span className="truncate">Duration: {durationStr} · Ends {endDate.toLocaleString("en-US", { hour: 'numeric', minute: 'numeric' })}</span>
+                        </div>
+                        
+                        {role === "senior" && (
+                          <button 
+                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDeleteContest(c._id); }} 
+                             className="absolute bottom-1.5 right-1.5 p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 border border-red-100 transition-colors opacity-0 group-hover:opacity-100 shadow-sm"
+                             title="Delete Contest"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                     </div>
+                   </div>
+                </Link>
+              )
           })}
         </div>
       )}
@@ -164,9 +210,14 @@ export default function ContestsHub() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1 block">Start Date & Time</label>
-                  <input type="datetime-local" required value={newContest.startTime} onChange={e => setNewContest({...newContest, startTime: e.target.value})} className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm font-medium shadow-sm text-slate-700" />
-                </div>
+                   <label className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1 block">Start Date & Time</label>
+                   <input type="datetime-local" required value={newContest.startTime} onChange={e => setNewContest({...newContest, startTime: e.target.value})} className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm font-medium shadow-sm text-slate-700" />
+                 </div>
+
+                 <div>
+                   <label className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1 block">End Date & Time</label>
+                   <input type="datetime-local" required value={newContest.endTime} onChange={e => setNewContest({...newContest, endTime: e.target.value})} min={newContest.startTime || undefined} className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm font-medium shadow-sm text-slate-700" />
+                 </div>
               </div>
               
               <div className="flex gap-3 mt-8">

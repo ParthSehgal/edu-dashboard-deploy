@@ -141,6 +141,15 @@ export const contestAPI = {
   },
   addContest: async (contestData) => {
     return api.post('/placement/contests', contestData);
+  },
+  getContestById: async (id) => {
+    return api.get(`/placement/contests/${id}`);
+  },
+  addContestDiscussion: async (id, message) => {
+    return api.post(`/placement/contests/${id}/discussion`, { message });
+  },
+  deleteContest: async (id) => {
+    return api.delete(`/placement/contests/${id}`);
   }
 };
 
@@ -153,6 +162,9 @@ export const mockOaAPI = {
   },
   uploadResults: async (id, studentsData) => {
     return api.put(`/placement/mock-oa/${id}/results`, studentsData);
+  },
+  deleteOA: async (id) => {
+    return api.delete(`/placement/mock-oa/${id}`);
   }
 };
 

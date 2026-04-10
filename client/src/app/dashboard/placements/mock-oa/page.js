@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/Layout/DashboardLayout";
 import { mockOaAPI, placementAPI } from "@/lib/api";
-import { Briefcase, Plus, Clock, ExternalLink, X, ChevronLeft, Calendar, FileText, CheckCircle2 } from "lucide-react";
+import { Briefcase, Plus, Clock, ExternalLink, X, ChevronLeft, Calendar, FileText, CheckCircle2, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -93,6 +93,18 @@ export default function MockOAHackathonHub() {
     }
   };
 
+  const handleDeleteOA = async (id) => {
+    if (confirm("Are you sure you want to delete this Mock OA?")) {
+      try {
+        await mockOaAPI.deleteOA(id);
+        fetchData();
+      } catch (err) {
+        console.error("Failed to delete OA", err);
+        alert("Failed to delete OA");
+      }
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="mb-6">
@@ -155,7 +167,14 @@ export default function MockOAHackathonHub() {
                   <div className="border-t border-slate-100 pt-6 mt-auto">
                      {oa.resultsUploaded ? (
                         <div>
-                           <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2 mb-4"><CheckCircle2 className="w-5 h-5 text-emerald-500" /> Students Selected</h4>
+                           <div className="flex justify-between items-center mb-4">
+                             <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-emerald-500" /> Students Selected</h4>
+                             {role === "senior" && (
+                                <button onClick={() => handleDeleteOA(oa._id)} className="text-sm font-bold bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 px-3 py-1.5 rounded-xl transition-colors shadow-sm flex items-center justify-center">
+                                   <Trash2 className="w-4 h-4" />
+                                </button>
+                             )}
+                           </div>
                            <div className="flex flex-wrap gap-2">
                               {oa.selectedStudents.length === 0 ? (
                                  <span className="text-sm text-slate-500 italic">No candidates selected.</span>
@@ -173,9 +192,14 @@ export default function MockOAHackathonHub() {
                         <div className="flex items-center justify-between">
                            <span className="text-sm text-slate-500 font-medium italic">Results not yet declared.</span>
                            {role === "senior" && (
-                              <button onClick={() => { setSelectedOA(oa); setShowResultsModal(true); }} className="text-sm font-bold bg-slate-900 text-white hover:bg-slate-800 px-4 py-2 rounded-xl transition-colors shadow-md">
-                                 Upload Results
-                              </button>
+                              <div className="flex gap-2">
+                                <button onClick={() => { setSelectedOA(oa); setShowResultsModal(true); }} className="text-sm font-bold bg-slate-900 text-white hover:bg-slate-800 px-4 py-2 rounded-xl transition-colors shadow-md">
+                                   Upload Results
+                                </button>
+                                <button onClick={() => handleDeleteOA(oa._id)} className="text-sm font-bold bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 px-4 py-2 rounded-xl transition-colors shadow-md flex items-center justify-center">
+                                   <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
                            )}
                         </div>
                      )}
