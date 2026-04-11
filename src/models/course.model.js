@@ -29,7 +29,8 @@ const courseSchema = new mongoose.Schema(
         "Mathematics and Computing",
         "AI",
         "Civil",
-        "Humanities"
+        "Humanities",
+        "Unknown"
       ]
     },
     gradesPublished: {

@@ -31,19 +31,36 @@ export default function SchedulePage() {
     // When we parse excel, we keep raw buffer/blob or just parse it directly on upload
   });
 
-  const handleScheduleUpload = (fileData) => {
-    // In a real app we'd upload to cloud storage and save URL
+  const handleScheduleUpload = (backendScheduleData) => {
     setScheduleData({
-      fileUrl: fileData.url,
-      fileType: fileData.type,
-      fileBuffer: fileData.buffer, // For local parsing
-      uploadedBy: user.name,
-      uploadedAt: new Date()
+      fileUrl: backendScheduleData.fileUrl,
+      fileType: backendScheduleData.fileType,
+      parsedData: backendScheduleData.parsedData,
+      uploadedBy: backendScheduleData.uploadedBy?.name || user.name,
+      uploadedAt: backendScheduleData.uploadedAt
     });
   };
 
+  useEffect(() => {
+    if (user.department) {
+      const fetchSchedule = async () => {
+        try {
+          const token = localStorage.getItem('token');
+          const res = await fetch(`http://localhost:5000/api/schedule?department=${user.department}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            handleScheduleUpload(data);
+          }
+        } catch(e) { console.error("Error fetching schedule", e); }
+      };
+      fetchSchedule();
+    }
+  }, [user.department]);
+
   return (
-    <DashboardLayout requiredRole="student">
+    <DashboardLayout>
       <div className="max-w-[1600px] mx-auto bg-[#fcfaf7] min-h-[calc(100vh-4rem)] p-4 md:p-8">
         
         <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end border-b border-[#e6e2d8] pb-4">
@@ -56,7 +73,7 @@ export default function SchedulePage() {
             </p>
           </div>
           
-          {user.role === "student" && user.isCR && (
+          {(user.role === "professor" || (user.role === "student" && user.isCR)) && (
             <button 
               onClick={() => setIsUploadModalOpen(true)}
               className="mt-4 md:mt-0 bg-[#2d2a26] text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-[#1a1816] transition-colors shadow-md flex items-center gap-2"
@@ -75,7 +92,7 @@ export default function SchedulePage() {
               </div>
               <h2 className="text-xl font-serif font-bold text-[#2d2a26] mb-2">No Schedule Available</h2>
               <p className="text-[#736d65] max-w-md">
-                The class representative has not uploaded the schedule for the {user.department} department yet.
+                No schedule has been uploaded for the {user.department} department yet.
               </p>
             </div>
           ) : (

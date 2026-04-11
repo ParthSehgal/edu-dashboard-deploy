@@ -32,9 +32,9 @@ exports.createCourse = async (req, res, next) => {
     const professor = await User.findById(req.user.id);
     console.log("Professor found:", professor?.email, "Department:", professor?.department);
     
-    if (!professor || !professor.department || professor.department === "Unknown") {
+    if (!professor || !professor.department) {
       return res.status(400).json({
-        message: "Your account does not have a valid department set. Please update your profile before creating a course."
+        message: "Your account does not have a valid department set."
       });
     }
 

@@ -7,6 +7,7 @@ import GradingModal from "@/components/ProfessorDashboard/GradingModal";
 import AnalyticsView from "@/components/ProfessorDashboard/AnalyticsView";
 import AuditLogTimeline from "@/components/ProfessorDashboard/AuditLogTimeline";
 import CSVBulkUpload from "@/components/ProfessorDashboard/CSVBulkUpload";
+import ProfessorSchedule from "@/components/ProfessorDashboard/ProfessorSchedule";
 
 // MOCK DATA for Demonstration 
 const MOCK_COURSES = [
@@ -112,6 +113,9 @@ export default function ProfessorDashboard() {
           <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Professor Console</h1>
           <p className="text-gray-500 mt-1 font-medium">Manage your courses, grade submissions, and oversee class performance.</p>
         </header>
+
+        {/* Weekly Schedule */}
+        <ProfessorSchedule />
 
         {/* Top Row: Quick Glance Grid & Grading Queue */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">

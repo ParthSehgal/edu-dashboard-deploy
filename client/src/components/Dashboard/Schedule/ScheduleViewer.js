@@ -70,34 +70,94 @@ export default function ScheduleViewer({ schedule }) {
   }
 
   // --- EXCEL VIEWER ---
-  if (schedule.fileType === "excel" && excelData) {
+  if (schedule.fileType === "excel" && schedule.parsedData) {
+    const excelData = schedule.parsedData;
+    const headers = excelData[0] || [];
+    const rows = excelData.slice(1);
+
     return (
-      <div className="w-full h-full p-6">
-        <div className="flex justify-between items-center mb-6 border-b border-[#e6e2d8] pb-2">
+      <div className="w-full h-full bg-white">
+        <style jsx>{`
+          .schedule-container::-webkit-scrollbar {
+            height: 8px;
+          }
+          .schedule-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+          }
+          .schedule-container::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+          }
+          .day-col {
+            min-width: 150px;
+            position: sticky;
+            left: 0;
+            z-index: 20;
+            background-color: white;
+            border-right: 1px solid #e2e8f0;
+          }
+          .time-slot-col {
+            min-width: 160px;
+          }
+        `}</style>
+        
+        <div className="flex justify-between items-center mb-0 p-6 border-b border-[#e6e2d8]">
           <h3 className="font-serif font-bold text-lg text-[#2d2a26]">Master Schedule</h3>
           <span className="text-xs text-[#736d65]">Uploaded by: {schedule.uploadedBy}</span>
         </div>
         
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left text-[#4a4744] border-collapse bg-white">
-            <tbody className="divide-y divide-[#e6e2d8]">
-              {excelData.map((row, rowIndex) => (
-                <tr 
-                  key={rowIndex} 
-                  className={`border-b border-[#e6e2d8] ${rowIndex === 0 ? 'bg-[#fcfbf9] font-bold text-[#2d2a26] uppercase' : 'hover:bg-[#fcfaf7]'}`}
-                >
-                  {row.map((cell, cellIndex) => (
-                    <td 
-                      key={cellIndex} 
-                      className={`px-4 py-3 border-r border-[#e6e2d8] ${rowIndex === 0 ? 'font-serif' : 'whitespace-pre-wrap'} ${!cell ? 'bg-[#faf9f7]' : ''}`}
-                    >
-                      {cell || ""}
+        <div className="schedule-container overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="bg-white">
+                {headers.map((h, i) => (
+                  <th key={i} className={`${i===0?'day-col':'time-slot-col'} p-4 text-center font-semibold text-slate-500 text-sm border-b border-slate-100`}>
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row, rIdx) => {
+                // If entire row is empty, skip
+                if (!row || row.length === 0) return null;
+                
+                return (
+                  <tr key={rIdx} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                    {/* The first cell is the Row Header (Day) */}
+                    <td className="day-col p-4 font-medium text-slate-700">
+                      <div className="font-bold">{row[0] || ""}</div>
                     </td>
-                  ))}
-                  {/* Handle empty trailing cells if rows have varying lengths */}
-                  {row.length === 0 && <td className="px-4 py-3"></td>}
-                </tr>
-              ))}
+                    
+                    {/* The remaining cells are the time slots */}
+                    {headers.slice(1).map((_, cIdx) => {
+                      const colIndexInRow = cIdx + 1;
+                      const cell = row[colIndexInRow];
+                      
+                      if (!cell) {
+                        return <td key={cIdx} className="p-2 align-top"></td>;
+                      }
+
+                      const cellText = cell.toString().split('\\n').join('\\n').split('\n');
+
+                      // Alternate colors based on index for variety
+                      const colors = ['orange', 'blue', 'green', 'indigo'];
+                      const color = colors[(rIdx + cIdx) % colors.length];
+
+                      return (
+                        <td key={cIdx} className="p-2 align-top">
+                          <div className={`bg-${color}-50 border border-${color}-100 p-3 rounded-lg text-xs`} data-purpose="class-card">
+                            <p className={`font-bold text-${color}-800`}>{cellText[0]}</p>
+                            {cellText[1] && <p className={`text-${color}-700`}>{cellText[1]}</p>}
+                            {cellText[2] && <p className={`mt-1 text-${color}-600 italic`}>{cellText[2]}</p>}
+                            {cellText.length > 3 && cellText.slice(3).map((line, i) => <p key={i} className={`text-${color}-600`}>{line}</p>)}
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

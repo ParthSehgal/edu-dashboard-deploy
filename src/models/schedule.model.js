@@ -20,6 +20,10 @@ const scheduleSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User", // The CR who uploaded it
       required: true
+    },
+    parsedData: {
+      type: mongoose.Schema.Types.Mixed, // flexible JSON array/object structure
+      default: null
     }
   },
   { timestamps: true }

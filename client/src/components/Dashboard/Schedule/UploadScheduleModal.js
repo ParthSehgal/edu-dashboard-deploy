@@ -40,30 +40,38 @@ export default function UploadScheduleModal({ isOpen, onClose, onUpload }) {
     
     setIsUploading(true);
 
-    const isExcel = file.name.toLowerCase().endsWith('.xlsx') || file.name.toLowerCase().endsWith('.xls');
-    
-    // Convert to ArrayBuffer for parsing in the mocked frontend flow
-    // In actual app, we would send `file` via FormData to server.
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const buffer = e.target.result;
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      // We pass some department for demo purposes (ideally taken from user context).
+      // If there's an active context, you'd pull this. Let's pass a dummy 'Computer Science' for now.
+      const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+      formData.append('department', storedUser.department || 'Computer Science');
+
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5000/api/schedule/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const responseData = await response.json();
       
-      // Creating mock object url for PDF
-      const url = URL.createObjectURL(file);
-      
-      setTimeout(() => {
-        setIsUploading(false);
-        onUpload({
-          url: url,
-          type: isExcel ? 'excel' : 'pdf',
-          buffer: buffer, // Keep buffer to let SheetJS parse it locally
-          fileObj: file
-        });
-        onClose();
-        setFile(null);
-      }, 1000);
-    };
-    reader.readAsArrayBuffer(file);
+      onUpload(responseData.schedule);
+      onClose();
+      setFile(null);
+    } catch (error) {
+      console.error(error);
+      alert('Upload failed: ' + error.message);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const isExcelFile = file && (file.name.endsWith('.xlsx') || file.name.endsWith('.xls'));

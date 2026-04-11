@@ -9,20 +9,23 @@ export default function DashboardLayout({ children, requiredRole }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
+  const [userRole, setUserRole] = useState(null);
+
   useEffect(() => {
-    const userRole = localStorage.getItem("role");
+    const role = localStorage.getItem("role");
     const token = localStorage.getItem("token");
 
-    if (!token || !userRole) {
+    if (!token || !role) {
       router.push("/");
       return;
     }
 
-    if (requiredRole && requiredRole !== userRole) {
-      router.push(`/dashboard/${userRole}`);
+    if (requiredRole && requiredRole !== role) {
+      router.push(`/dashboard/${role}`);
       return;
     }
 
+    setUserRole(role);
     setLoading(false);
   }, [router, requiredRole]);
 
@@ -36,9 +39,9 @@ export default function DashboardLayout({ children, requiredRole }) {
 
   return (
     <div className="flex bg-slate-50 min-h-screen">
-      <Sidebar role={requiredRole} />
+      <Sidebar role={userRole} />
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
-        <Navbar role={requiredRole} />
+        <Navbar role={userRole} />
         <main className="flex-1 overflow-auto p-8">{children}</main>
       </div>
     </div>

@@ -7,7 +7,7 @@ import { Save, Lock, Mail, Link as LinkIcon, User, Briefcase } from "lucide-reac
 export default function IdentitySettings({ user, setUser }) {
   const [formData, setFormData] = useState({
     bio: user.bio || "",
-    targetRoles: user.targetRoles?.join(", ") || "",
+    targetRoles: (user.targetRoles || []).join(", ") || "",
     linkedin: user.socialLinks?.linkedin || "",
     github: user.socialLinks?.github || "",
     portfolio: user.socialLinks?.portfolio || "",

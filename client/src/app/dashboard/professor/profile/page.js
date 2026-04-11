@@ -277,7 +277,7 @@ export default function ProfessorProfilePage() {
   const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
   // Initials for avatar
-  const initials = profile?.name?.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() || "P";
+  const initials = (profile?.name || "P").split(" ").filter(w => w).map(w => w[0]).join("").slice(0, 2).toUpperCase() || "P";
 
   return (
     <DashboardLayout requiredRole="professor">
