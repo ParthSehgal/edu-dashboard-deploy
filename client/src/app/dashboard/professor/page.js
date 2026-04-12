@@ -63,7 +63,7 @@ export default function ProfessorDashboard() {
       await tpcAPI.toggleCoord(userId);
       fetchTpcData();
     } catch (e) {
-      alert("Failed to update TPC status.");
+      console.error("Failed to update TPC status.", e);
     }
   }
 
@@ -72,7 +72,6 @@ export default function ProfessorDashboard() {
     setSubmitting(true);
     try {
       await coursesAPI.createCourse({ courseId, title, description });
-      alert("Course created successfully!");
       setShowCreateForm(false);
       setCourseId("");
       setTitle("");
@@ -80,7 +79,6 @@ export default function ProfessorDashboard() {
       fetchCourses();
     } catch (error) {
       console.error(error);
-      alert(error.response?.data?.message || "Failed to create course");
     } finally {
       setSubmitting(false);
     }
@@ -161,9 +159,6 @@ export default function ProfessorDashboard() {
              <Shield className="w-5 h-5 text-indigo-600" /> 
              <h2 className="text-xl font-bold text-slate-800">TPC Coordinator Management</h2>
           </div>
-          <p className="text-xs text-slate-500 font-medium bg-slate-100 px-3 py-1 rounded-full border border-slate-200 uppercase tracking-wider">
-            Branch: {userDept || courses[0]?.department || "Loading..."}
-          </p>
         </div>
         <p className="text-sm text-slate-500 mb-6">Toggle coordinator status for seniors in your department.</p>
 
