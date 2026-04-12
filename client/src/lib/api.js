@@ -16,11 +16,14 @@ export const authAPI = {
   login: async (collegeId, password) => {
     return api.post('/auth/login', { collegeId, password });
   },
-  register: async (name, collegeId, email, password, role, department) => {
-    return api.post('/auth/register', { name, collegeId, email, password, role, department });
+  register: async (name, collegeId, email, password, role, department, isHOD) => {
+    return api.post('/auth/register', { name, collegeId, email, password, role, department, isHOD });
   },
   verifyOTP: async (email, otp) => {
     return api.post('/auth/verify-otp', { email, otp });
+  },
+  promoteToHOD: async () => {
+    return api.post('/auth/promote-to-hod');
   }
 };
 
@@ -208,6 +211,29 @@ export const mockOaAPI = {
   deleteOA: async (id) => {
     return api.delete(`/placement/mock-oa/${id}`);
   }
+};
+
+export const alumniAPI = {
+  // Feed
+  getAllTalks: async () => api.get('/alumni/talks'),
+  getTalkById: async (id) => api.get(`/alumni/talks/${id}`),
+
+  // Create
+  createTedTalk: async (data) => api.post('/alumni/talks/ted-talk', data),
+  createTechUpdate: async (data) => api.post('/alumni/talks/tech-update', data),
+
+  // Engagement
+  toggleLike: async (id) => api.post(`/alumni/talks/${id}/like`),
+  addComment: async (id, text) => api.post(`/alumni/talks/${id}/comment`, { text }),
+
+  // Delete
+  deleteTalk: async (id) => api.delete(`/alumni/talks/${id}`)
+};
+
+export const tpcAPI = {
+  // HOD management
+  getSeniors: () => api.get('/placement/tpc/seniors'),           // all seniors in dept
+  toggleCoord: (userId) => api.put(`/placement/tpc/toggle/${userId}`) // toggle status
 };
 
 export default api;

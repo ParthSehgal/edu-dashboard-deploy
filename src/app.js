@@ -17,7 +17,9 @@ const dsaRoutes = require("./routes/placement/dsa.routes");
 const developmentRoutes = require("./routes/placement/development.routes");
 const contestRoutes = require("./routes/placement/contest.routes");
 const mockOARoutes = require("./routes/placement/mockOA.routes");
+const tpcRoutes = require("./routes/placement/tpc.routes");
 const scheduleRoutes = require("./routes/schedule.routes");
+const alumniRoutes = require("./routes/alumni.routes");
 
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
@@ -31,6 +33,8 @@ app.use("/api/placement/dsa", dsaRoutes);
 app.use("/api/placement/development", developmentRoutes);
 app.use("/api/placement/contests", contestRoutes);
 app.use("/api/placement/mock-oa", mockOARoutes);
+app.use("/api/placement/tpc", tpcRoutes);
+app.use("/api/alumni", alumniRoutes);
 
 // Test route
 app.get("/", (req, res) => {

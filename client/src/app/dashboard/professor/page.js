@@ -2,8 +2,8 @@
 
 import DashboardLayout from "@/components/Layout/DashboardLayout";
 import { useEffect, useState } from "react";
-import { BookOpen, Users, FilePlus } from "lucide-react";
-import { coursesAPI } from "@/lib/api";
+import { BookOpen, Users, FilePlus, Shield, CheckCircle2, Circle } from "lucide-react";
+import { coursesAPI, tpcAPI, userAPI } from "@/lib/api";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -11,6 +11,9 @@ export default function ProfessorDashboard() {
   const router = useRouter();
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [allSeniors, setAllSeniors] = useState([]);
+  const [tpcLoading, setTpcLoading] = useState(false);
+  const [userDept, setUserDept] = useState("");
 
   // Form states
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -21,6 +24,8 @@ export default function ProfessorDashboard() {
 
   useEffect(() => {
     fetchCourses();
+    fetchTpcData();
+    checkProfile();
   }, []);
 
   async function fetchCourses() {
@@ -32,6 +37,33 @@ export default function ProfessorDashboard() {
       console.error("Failed to fetch courses", error);
     } finally {
       setLoading(false);
+    }
+  }
+  async function checkProfile() {
+    try {
+      const me = await userAPI.getMe();
+      setUserDept(me.data?.data?.department || "N/A");
+    } catch (e) {}
+  }
+
+  async function fetchTpcData() {
+    setTpcLoading(true);
+    try {
+      const res = await tpcAPI.getSeniors();
+      setAllSeniors(res.data?.data || []);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setTpcLoading(false);
+    }
+  }
+
+  async function handleToggleTpc(userId) {
+    try {
+      await tpcAPI.toggleCoord(userId);
+      fetchTpcData();
+    } catch (e) {
+      alert("Failed to update TPC status.");
     }
   }
 
@@ -61,13 +93,15 @@ export default function ProfessorDashboard() {
           <h1 className="text-2xl font-bold text-slate-800">Professor Dashboard</h1>
           <p className="text-slate-500 mt-1">Manage your courses and assignments.</p>
         </div>
-        <button 
-          onClick={() => setShowCreateForm(!showCreateForm)}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-medium transition-colors flex items-center gap-2"
-        >
-          <FilePlus className="w-4 h-4" />
-          {showCreateForm ? 'Cancel Creation' : 'Create Course'}
-        </button>
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => setShowCreateForm(!showCreateForm)}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-medium transition-colors flex items-center gap-2"
+          >
+            <FilePlus className="w-4 h-4" />
+            {showCreateForm ? 'Cancel Creation' : 'Create Course'}
+          </button>
+        </div>
       </div>
 
       {showCreateForm && (
@@ -120,14 +154,98 @@ export default function ProfessorDashboard() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
+      {/* ── TPC Coordinator Management ── */}
+      <div className="mb-10">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+             <Shield className="w-5 h-5 text-indigo-600" /> 
+             <h2 className="text-xl font-bold text-slate-800">TPC Coordinator Management</h2>
+          </div>
+          <p className="text-xs text-slate-500 font-medium bg-slate-100 px-3 py-1 rounded-full border border-slate-200 uppercase tracking-wider">
+            Branch: {userDept || courses[0]?.department || "Loading..."}
+          </p>
+        </div>
+        <p className="text-sm text-slate-500 mb-6">Toggle coordinator status for seniors in your department.</p>
+
+          {tpcLoading ? (
+            <div className="flex justify-center py-8"><div className="w-7 h-7 border-4 border-indigo-100 border-t-indigo-500 rounded-full animate-spin" /></div>
+          ) : allSeniors.length === 0 ? (
+            <div className="bg-slate-50 rounded-2xl p-8 text-center border border-dashed border-slate-200">
+               <p className="text-slate-500 text-sm">No seniors found in your department.</p>
+            </div>
+          ) : (
+            <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-100">
+                    <th className="text-left px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Student Name</th>
+                    <th className="text-left px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">College ID</th>
+                    <th className="text-center px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">TPC Status</th>
+                    <th className="text-right px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {allSeniors.map(u => (
+                    <tr key={u._id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col">
+                           <span className="font-semibold text-slate-800">{u.name}</span>
+                           <span className={`text-[10px] font-black uppercase tracking-widest w-fit px-1.5 py-0.5 rounded mt-0.5 ${u.placementRole === "senior" ? "bg-amber-100 text-amber-700" : "bg-blue-50 text-blue-500"}`}>
+                             {u.placementRole || "Student"}
+                           </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-slate-500 font-medium">{u.collegeId}</td>
+                      <td className="px-6 py-4 text-center">
+                        {u.isTpcCoord ? (
+                          <span className="inline-flex items-center gap-1.5 bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold border border-indigo-100">
+                            <CheckCircle2 className="w-3.5 h-3.5" /> Active Coord
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 bg-slate-50 text-slate-400 px-3 py-1 rounded-full text-xs font-medium border border-slate-100">
+                            <Circle className="w-3.5 h-3.5" /> Inactive
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <button 
+                          onClick={() => handleToggleTpc(u._id)}
+                          className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                            u.isTpcCoord 
+                            ? "bg-red-50 text-red-600 hover:bg-red-100" 
+                            : "bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm"
+                          }`}
+                        >
+                          {u.isTpcCoord ? "Revoke Access" : "Grant Access"}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4 border-l-4 border-l-indigo-600">
+          <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center">
+            <Shield className="w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-slate-800">Faculty Member</h3>
+            <p className="text-xs text-slate-500 font-medium">Branch: {userDept}</p>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4 border-l-4 border-l-blue-600">
+          <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center">
             <BookOpen className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-2xl font-bold text-slate-800">{courses.length}</h3>
-            <p className="text-sm text-slate-500 font-medium">Your Courses</p>
+            <h3 className="text-lg font-bold text-slate-800">{courses.length} Courses</h3>
+            <p className="text-xs text-slate-500 font-medium">Teaching assignments</p>
           </div>
         </div>
       </div>

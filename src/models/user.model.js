@@ -67,6 +67,19 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     },
+
+    // ── TPC COORDINATOR ────────────────────────────────────────
+    // Set to true by HOD. Only TPC Coords can post contests & tech updates.
+    isTpcCoord: {
+      type: Boolean,
+      default: false
+    },
+
+    // ── HOD FLAG (Professor only) ───────────────────────────────
+    isHOD: {
+      type: Boolean,
+      default: false
+    },
     
     // ── PROFILE PREFERENCES & ACADEMICS ────────────────────────
     emailNotifications: {

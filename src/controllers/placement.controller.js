@@ -17,10 +17,15 @@ exports.test = (req, res) => {
   });
 };
 
-// GET /api/placement/me — returns placement role of logged in user
-exports.getMyPlacementRole = (req, res) => {
+// GET /api/placement/me — returns placement role of logged in user and TPC status
+exports.getMyPlacementRole = async (req, res) => {
+  const User = require("../models/user.model");
   const placementRole = getPlacementRole(req.user.collegeId || "");
-  return success(res, "Placement role fetched", { placementRole });
+  const user = await User.findById(req.user.id).select("isTpcCoord");
+  return success(res, "Placement role fetched", { 
+    placementRole, 
+    isTpcCoord: user?.isTpcCoord || false 
+  });
 };
 
 // GET /api/placement/bookmarks — returns posts bookmarked by the user

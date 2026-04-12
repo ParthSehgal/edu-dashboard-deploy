@@ -29,6 +29,11 @@ export default function Sidebar({ role }) {
       { name: "Placements", href: "/dashboard/placements", icon: Briefcase },
       { name: "Profile", href: "/dashboard/profile", icon: UserIcon }
     ],
+    alumni: [
+      { name: "Alumni Hub", href: "/dashboard/alumni", icon: LayoutDashboard },
+      { name: "Placements", href: "/dashboard/placements", icon: Briefcase },
+      { name: "Profile", href: "/dashboard/profile", icon: UserIcon }
+    ],
   };
 
   const currentLinks = links[role] || links["student"];

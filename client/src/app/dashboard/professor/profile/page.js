@@ -2,12 +2,12 @@
 
 import { useState, useEffect, useRef } from "react";
 import DashboardLayout from "@/components/Layout/DashboardLayout";
-import { facultyAPI } from "@/lib/api";
+import { facultyAPI, authAPI } from "@/lib/api";
 import {
   User, GraduationCap, Building2, Globe, BookOpen,
   Clock, MapPin, Edit3, Save, X, Lock, Bell, BellOff,
   ChevronRight, ExternalLink, Book, Bookmark,
-  Users, Calendar, Plus, Trash2, Eye, EyeOff, CheckCircle, AlertCircle
+  Users, Calendar, Plus, Trash2, Eye, EyeOff, CheckCircle, AlertCircle, Shield
 } from "lucide-react";
 
 // ── Google Scholar SVG icon (no lucide equivalent) ─────────────────────

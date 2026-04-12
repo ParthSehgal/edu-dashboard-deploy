@@ -28,7 +28,11 @@ export default function LoginPage() {
       // Redirect to respective dashboard
       router.push(`/dashboard/${res.data.user.role}`);
     } catch (err) {
-      setError("Invalid credentials. Please try again.");
+      if (err.response?.data?.unverified) {
+        router.push(`/verify-otp?email=${encodeURIComponent(err.response.data.email)}`);
+      } else {
+        setError(err.response?.data?.message || "Invalid credentials. Please try again.");
+      }
     } finally {
       setLoading(false);
     }

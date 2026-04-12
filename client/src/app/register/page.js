@@ -20,6 +20,7 @@ export default function RegisterPage() {
     password: "",
     role: "student",
     department: "",
+    isHOD: false,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -37,7 +38,8 @@ export default function RegisterPage() {
         formData.email,
         formData.password,
         formData.role,
-        formData.role === "professor" ? formData.department : undefined
+        formData.role === "professor" ? formData.department : undefined,
+        formData.role === "professor" ? formData.isHOD : false
       );
 
       router.push(`/verify-otp?email=${encodeURIComponent(formData.email)}`);
@@ -123,6 +125,22 @@ export default function RegisterPage() {
                 <option value="Humanities">Humanities</option>
                 <option value="Unknown">Other / Unknown</option>
               </select>
+            </div>
+          )}
+
+          {formData.role === "professor" && (
+            <div className="flex items-center gap-3 bg-indigo-50/50 p-4 rounded-xl border border-indigo-100">
+              <input 
+                type="checkbox" 
+                id="isHOD"
+                checked={formData.isHOD}
+                onChange={(e) => setFormData({ ...formData, isHOD: e.target.checked })}
+                className="w-5 h-5 accent-indigo-600 rounded cursor-pointer"
+              />
+              <label htmlFor="isHOD" className="text-sm font-bold text-indigo-900 cursor-pointer">
+                I am the HOD (Head of Department)
+                <p className="text-[10px] text-indigo-500 font-medium normal-case mt-0.5">Grants permission to manage TPC Coordinators for your department.</p>
+              </label>
             </div>
           )}
 

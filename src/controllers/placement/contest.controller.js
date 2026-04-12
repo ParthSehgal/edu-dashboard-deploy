@@ -20,8 +20,8 @@ exports.addContest = async (req, res) => {
   try {
     const { title, platform, link, startTime, endTime } = req.body;
 
-    if (req.placementRole !== "senior") {
-        return res.status(403).json({ message: "Only seniors can post upcoming contests." });
+    if (!req.isTpcCoord && req.user.role !== "alumni") {
+        return res.status(403).json({ message: "Only TPC Coordinators can post contests. Contact your HOD for coordinator access." });
     }
 
     const contest = new Contest({
@@ -91,8 +91,8 @@ exports.addContestDiscussion = async (req, res) => {
 // DELETE A CONTEST (SENIOR ONLY)
 exports.deleteContest = async (req, res) => {
   try {
-    if (req.placementRole !== "senior") {
-      return res.status(403).json({ message: "Only seniors can delete contests." });
+    if (!req.isTpcCoord && req.user.role !== "alumni") {
+      return res.status(403).json({ message: "Only TPC Coordinators can delete contests." });
     }
 
     const contest = await Contest.findById(req.params.id);

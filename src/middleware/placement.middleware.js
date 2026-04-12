@@ -47,8 +47,33 @@ exports.restrictToAlumni = (req, res, next) => {
   next();
 };
 
-// Middleware — attaches placementRole to req without blocking
-exports.attachPlacementRole = (req, res, next) => {
+// Middleware — attaches placementRole AND isTpcCoord to req without blocking
+exports.attachPlacementRole = async (req, res, next) => {
   req.placementRole = exports.getPlacementRole(req.user.collegeId || "");
+
+  // For seniors, check DB for TPC coordinator approval
+  if (req.placementRole === "senior" || req.user.role === "alumni") {
+    try {
+      const User = require("../models/user.model");
+      const user = await User.findById(req.user.id).select("isTpcCoord isHOD");
+      req.isTpcCoord = user?.isTpcCoord || false;
+      req.isHOD = user?.isHOD || false;
+    } catch (e) {
+      req.isTpcCoord = false;
+      req.isHOD = false;
+    }
+  } else if (req.user.role === "professor") {
+    try {
+      const User = require("../models/user.model");
+      const user = await User.findById(req.user.id).select("isHOD");
+      req.isHOD = user?.isHOD || false;
+    } catch (e) {
+      req.isHOD = false;
+    }
+  } else {
+    req.isTpcCoord = false;
+    req.isHOD = false;
+  }
+
   next();
 };
