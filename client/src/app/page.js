@@ -8,16 +8,38 @@ import { authAPI } from "@/lib/api";
 const RectFace = ({ color, width, height, delay, focusState, collegeId, zIndex }) => {
   const isTurned = focusState === "password";
 
-  const getPupilsTransform = () => {
+  const getPupilsTransform = (eyeIndex) => {
     if (focusState === "username") {
       const maxChars = 25;
       const length = Math.min(collegeId.length, maxChars);
-      const xOffset = (length / maxChars) * 20 - 10;
-      const yOffset = 0;
+      
+      // Look towards the form on the right
+      const baseLookX = 14; 
+      
+      // subtle tracking effect as text gets longer
+      const typingX = (length / maxChars) * 12;
+      const typingY = (length / maxChars) * 4;
+      
+      // Make it realistic by adding slight, unique jitter to X and Y per face & eye
+      const jitterX = Math.sin(length * 0.5 + delay + eyeIndex) * 2;
+      const jitterY = Math.cos(length * 0.8 + delay + eyeIndex) * 1.5;
+      
+      const xOffset = baseLookX + typingX + jitterX;
+      const yOffset = typingY + jitterY;
       return `translate(${xOffset}px, ${yOffset}px)`;
     }
     return "translate(0px, 0px)";
   };
+
+  let bodyTransform = "rotateY(0deg)";
+  if (isTurned) {
+    bodyTransform = "rotateY(180deg)";
+  } else if (focusState === "username") {
+    // Physically turn the bodies to face the text box (to their right)
+    // Vary the rotation slightly for each creature to make it organic
+    const rotateAngle = 10 + (width % 15);
+    bodyTransform = `rotateY(${rotateAngle}deg)`;
+  }
 
   return (
     <div 
@@ -34,7 +56,7 @@ const RectFace = ({ color, width, height, delay, focusState, collegeId, zIndex }
       <div 
         className="w-full h-full relative"
         style={{
-          transform: isTurned ? "rotateY(180deg)" : "rotateY(0deg)",
+          transform: bodyTransform,
           transition: `transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) ${delay}ms`,
           transformStyle: "preserve-3d",
           transformOrigin: "center center"
@@ -55,11 +77,11 @@ const RectFace = ({ color, width, height, delay, focusState, collegeId, zIndex }
           <div className="flex gap-4">
              <div 
                className="w-3.5 h-3.5 bg-slate-900 rounded-full shadow-sm" 
-               style={{ transform: getPupilsTransform(), transition: "transform 0.1s ease-out" }} 
+               style={{ transform: getPupilsTransform(1), transition: "transform 0.25s ease-out" }} 
              />
              <div 
                className="w-3.5 h-3.5 bg-slate-900 rounded-full shadow-sm" 
-               style={{ transform: getPupilsTransform(), transition: "transform 0.1s ease-out" }} 
+               style={{ transform: getPupilsTransform(2), transition: "transform 0.15s ease-out" }} 
              />
           </div>
         </div>
