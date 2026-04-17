@@ -144,3 +144,28 @@ exports.getTranscript = async (req, res, next) => {
     next(error);
   }
 };
+
+// ── UPDATE CR STATUS (Professor Only) ───────────────────────────
+exports.updateCRStatus = async (req, res, next) => {
+  try {
+    const { isCR } = req.body;
+    const studentId = req.params.id;
+
+    // Optional: add a check to make sure the user being updated is a student
+    const student = await User.findById(studentId);
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    if (!['student', 'ta'].includes(student.role)) {
+       return res.status(400).json({ message: "Only students can be made CRs" });
+    }
+
+    student.isCR = isCR;
+    await student.save();
+
+    return success(res, "CR status updated successfully", student);
+  } catch (error) {
+    next(error);
+  }
+};

@@ -68,6 +68,7 @@ export default function DSARoadmap() {
   const [completedMap, setCompletedMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [placementRole, setPlacementRole] = useState("student");
+  const [isTpcCoord, setIsTpcCoord] = useState(false);
   
   // Modal states
   const [activeStep, setActiveStep] = useState(null); // Practice Tasks Modal
@@ -105,8 +106,9 @@ export default function DSARoadmap() {
   const fetchRole = async () => {
     try {
       const res = await placementAPI.getPlacementRole();
-      if (res.data?.data?.placementRole) {
-        setPlacementRole(res.data.data.placementRole);
+      if (res.data?.data) {
+        setPlacementRole(res.data.data.placementRole || "student");
+        setIsTpcCoord(res.data.data.isTpcCoord || false);
       }
     } catch (err) {
       console.error("Failed to fetch placement role", err);
@@ -139,7 +141,7 @@ export default function DSARoadmap() {
       fetchData(); // refresh the list
     } catch (err) {
       console.error(err);
-      alert("Failed to add question. Only Seniors can add questions.");
+      alert("Failed to add question. Only Seniors or TPC Coordinators can add questions.");
     } finally {
       setIsSubmitting(false);
     }
@@ -322,7 +324,7 @@ export default function DSARoadmap() {
                 </div>
               )}
               
-              {placementRole === "senior" && (
+              {(placementRole === "senior" || isTpcCoord) && (
                 <div className="mt-8 pt-8 border-t border-slate-200">
                    {!showAddModal ? (
                       <button onClick={() => setShowAddModal(true)} className="flex items-center justify-center gap-2 w-full py-4 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 font-bold hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-600 transition-colors">

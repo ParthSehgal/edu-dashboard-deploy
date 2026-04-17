@@ -13,12 +13,13 @@ export default function ContestsHub() {
   const [contests, setContests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState("student");
+  const [isTpcCoord, setIsTpcCoord] = useState(false);
 
   // Contest Modal State
   const [showContestModal, setShowContestModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [newContest, setNewContest] = useState({
-    title: "", platform: "LeetCode", link: "", startTime: "", endTime: ""
+    title: "", platform: "LeetCode", link: "", contestType: "Global", startTime: "", endTime: "", time: ""
   });
 
   const fetchData = async () => {
@@ -28,8 +29,10 @@ export default function ContestsHub() {
         placementAPI.getPlacementRole(),
         contestAPI.getContests().catch(() => ({ data: { data: [] } }))
       ]);
-      
-      if (roleRes.data?.data?.placementRole) setRole(roleRes.data.data.placementRole);
+      if (roleRes.data?.data) {
+        setRole(roleRes.data.data.placementRole || "student");
+        setIsTpcCoord(roleRes.data.data.isTpcCoord || false);
+      }
       const raw = contestRes.data?.data || [];
       // Most recently added contest first
       const sorted = [...raw].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -53,15 +56,17 @@ export default function ContestsHub() {
         title: newContest.title,
         platform: newContest.platform,
         link: newContest.link,
+        contestType: newContest.contestType,
         startTime: new Date(newContest.startTime).toISOString(),
-        endTime: new Date(newContest.endTime).toISOString()
+        endTime: new Date(newContest.endTime).toISOString(),
+        time: newContest.time
       });
       setShowContestModal(false);
-      setNewContest({ title: "", platform: "LeetCode", link: "", startTime: "", endTime: "" });
+      setNewContest({ title: "", platform: "LeetCode", link: "", contestType: "Global", startTime: "", endTime: "", time: "" });
       fetchData(); // Refresh contests
     } catch (err) {
       console.error(err);
-      alert("Failed to add contest. Make sure you are a Senior.");
+      alert("Failed to add contest. Make sure you are a TPC Coordinator.");
     } finally {
       setIsSubmitting(false);
     }
@@ -94,7 +99,7 @@ export default function ContestsHub() {
            </h1>
            <p className="text-slate-500 mt-2 text-lg max-w-2xl">Never miss a coding competition. Participate in active hackathons tracked and updated by seniors to keep your problem-solving skills sharp.</p>
         </div>
-        {role === "senior" && (
+        {isTpcCoord && (
           <button onClick={() => setShowContestModal(true)} className="bg-slate-900 hover:bg-black text-white px-6 py-3.5 rounded-2xl font-bold shadow-xl shadow-slate-900/20 transition-all hover:-translate-y-1 whitespace-nowrap flex items-center gap-2 text-sm">
             <Plus className="w-4 h-4" /> Post New Contest
           </button>
@@ -160,7 +165,7 @@ export default function ContestsHub() {
                            <span className="truncate">Duration: {durationStr} · Ends {endDate.toLocaleString("en-US", { hour: 'numeric', minute: 'numeric' })}</span>
                         </div>
                         
-                        {role === "senior" && (
+                        {isTpcCoord && (
                           <button 
                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDeleteContest(c._id); }} 
                              className="absolute bottom-1.5 right-1.5 p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 border border-red-100 transition-colors opacity-0 group-hover:opacity-100 shadow-sm"
@@ -208,6 +213,16 @@ export default function ContestsHub() {
                   <label className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1 block">Contest Link</label>
                   <input type="url" required value={newContest.link} onChange={e => setNewContest({...newContest, link: e.target.value})} placeholder="https://..." className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm font-medium shadow-sm" />
                 </div>
+                
+                <div>
+                  <label className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1 block">Contest Type</label>
+                  <input type="text" required value={newContest.contestType} onChange={e => setNewContest({...newContest, contestType: e.target.value})} placeholder="e.g. Global, Hiring, Virtual" className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm font-medium shadow-sm" />
+                </div>
+
+                <div>
+                   <label className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1 block">Duration (Time)</label>
+                   <input type="text" required value={newContest.time} onChange={e => setNewContest({...newContest, time: e.target.value})} placeholder="e.g. 2 hours, 120 mins" className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm font-medium shadow-sm text-slate-700" />
+                 </div>
 
                 <div>
                    <label className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1 block">Start Date & Time</label>

@@ -30,7 +30,7 @@ exports.getCourseGrades = async (req, res, next) => {
     if (!course) return res.status(404).json({ message: "Course not found" });
 
     // Security: Only the instructor (or future TAs) can view the whole gradebook
-    if (course.instructor.toString() !== req.user.id) {
+    if (course.instructor.toString() !== req.user.id && req.user.role !== "ta") {
       return res.status(403).json({ message: "Forbidden: You do not have permission to view these grades." });
     }
 
@@ -182,35 +182,50 @@ exports.updateFinalGrade = async (req, res, next) => {
 const { Parser } = require("json2csv");
 const csv = require("csvtojson");
 
-// Export Grades to CSV
+// Export Grades to CSV or Excel
 exports.exportGradesCSV = async (req, res, next) => {
   try {
     const course = await Course.findOne({ courseId: req.params.courseId });
-    if (course.instructor.toString() !== req.user.id) return res.status(403).json({ message: "Forbidden" });
+    if (course.instructor.toString() !== req.user.id && req.user.role !== "ta") return res.status(403).json({ message: "Forbidden" });
 
     const grades = await Grade.find({ course: course._id }).populate("student", "name collegeId");
     
-    // Flatten data for Excel
-    const csvData = grades.map(g => ({
+    const isTemplate = req.query.template === 'true';
+    const format = req.query.format || 'csv';
+
+    // Flatten data
+    const exportData = grades.map(g => ({
       StudentID: g.student._id.toString(), // CRITICAL for re-importing
-      RollNumber: g.student.collegeId,
-      Name: g.student.name,
-      Quiz1: g.components.quiz1 || 0,
-      Quiz2: g.components.quiz2 || 0,
-      Midsem: g.components.midsem || 0,
-      Endsem: g.components.endsem || 0,
-      Project: g.components.project || 0,
-      Misc: g.components.misc || 0,
-      CalculatedScore: g.finalScore || 0,
-      OfficialFinalGrade: g.finalGrade || ""
+      RollNumber: g.student?.collegeId || "",
+      Name: g.student?.name || "",
+      Quiz1: isTemplate ? "" : (g.components.quiz1 || 0),
+      Quiz2: isTemplate ? "" : (g.components.quiz2 || 0),
+      Midsem: isTemplate ? "" : (g.components.midsem || 0),
+      Endsem: isTemplate ? "" : (g.components.endsem || 0),
+      Project: isTemplate ? "" : (g.components.project || 0),
+      Misc: isTemplate ? "" : (g.components.misc || 0),
+      CalculatedScore: isTemplate ? "" : (g.finalScore || 0),
+      OfficialFinalGrade: isTemplate ? "" : (g.finalGrade || "")
     }));
 
-    const json2csvParser = new Parser();
-    const csvString = json2csvParser.parse(csvData);
+    if (format === 'xlsx' || format === 'excel') {
+      const worksheet = xlsx.utils.json_to_sheet(exportData);
+      const workbook = xlsx.utils.book_new();
+      xlsx.utils.book_append_sheet(workbook, worksheet, "Grades");
+      
+      const buffer = xlsx.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+      
+      res.header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.attachment(`${req.params.courseId}_Grades${isTemplate ? '_Template' : ''}.xlsx`);
+      return res.send(buffer);
+    } else {
+      const json2csvParser = new Parser();
+      const csvString = json2csvParser.parse(exportData);
 
-    res.header("Content-Type", "text/csv");
-    res.attachment(`${req.params.courseId}_Grades.csv`);
-    return res.send(csvString);
+      res.header("Content-Type", "text/csv");
+      res.attachment(`${req.params.courseId}_Grades${isTemplate ? '_Template' : ''}.csv`);
+      return res.send(csvString);
+    }
   } catch (error) {
     next(error);
   }
@@ -228,7 +243,7 @@ exports.importGradesCSV = async (req, res, next) => {
     }
     
     const course = await Course.findOne({ courseId: req.params.courseId });
-    if (course.instructor.toString() !== req.user.id) {
+    if (course.instructor.toString() !== req.user.id && req.user.role !== "ta") {
        fs.unlinkSync(req.file.path);
        return res.status(403).json({ message: "Forbidden" });
     }
@@ -283,7 +298,7 @@ exports.importGradesCSV = async (req, res, next) => {
         
         gradeSheet.auditLog.push({
           updatedBy: req.user.id,
-          role: "professor",
+          role: req.user.role,
           action: "Bulk updated via Excel/CSV Import"
         });
         await gradeSheet.save();

@@ -18,7 +18,7 @@ exports.getContests = async (req, res) => {
 // ADD A NEW CONTEST (SENIOR ONLY)
 exports.addContest = async (req, res) => {
   try {
-    const { title, platform, link, startTime, endTime } = req.body;
+    const { title, platform, link, contestType, startTime, endTime, time } = req.body;
 
     if (!req.isTpcCoord && req.user.role !== "alumni") {
         return res.status(403).json({ message: "Only TPC Coordinators can post contests. Contact your HOD for coordinator access." });
@@ -28,8 +28,10 @@ exports.addContest = async (req, res) => {
       title,
       platform,
       link,
+      contestType,
       startTime,
       endTime,
+      time,
       addedBy: req.user.id
     });
 

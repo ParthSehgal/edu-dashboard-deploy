@@ -8,7 +8,8 @@ const {
   updateProfile,
   updatePassword,
   getTranscript,
-  getCourseArchive
+  getCourseArchive,
+  updateCRStatus
 } = require("../controllers/user.controller");
 const { protect, restrictTo } = require("../middleware/auth.middleware");
 
@@ -23,5 +24,6 @@ router.get("/me/course-archive", protect, restrictTo("professor"), getCourseArch
 // Admin / Prof / TA routes
 router.get("/", protect, restrictTo("professor", "ta"), getAllUsers);
 router.delete("/:id", protect, restrictTo("admin", "professor"), deleteUser);
+router.put("/:id/cr", protect, restrictTo("professor"), updateCRStatus);
 
 module.exports = router;
