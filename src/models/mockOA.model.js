@@ -8,12 +8,10 @@ const mockOASchema = new mongoose.Schema(
       trim: true
     },
     syllabus: {
-      type: String,
-      required: true
+      type: String
     },
     date: {
-      type: Date,
-      required: true
+      type: Date
     },
     selectedStudents: [
       {

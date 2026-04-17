@@ -91,23 +91,23 @@ export default function PlacementsFeed() {
         </div>
 
         {/* ACTION BUTTONS */}
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap md:flex-nowrap items-center gap-3">
           {isTpcCoord && (
-            <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-2.5 rounded-xl font-bold text-sm shadow-sm">
+            <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-2.5 rounded-xl font-bold text-sm shadow-sm whitespace-nowrap">
               <CheckCircle2 className="w-4 h-4" /> TPC Coordinator
             </div>
           )}
 
-          <Link href="/dashboard/placements/contests" className="flex items-center gap-2 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 px-5 py-2.5 rounded-xl font-bold transition-all shadow-sm">
+          <Link href="/dashboard/placements/contests" className="flex items-center gap-2 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 px-4 py-2.5 rounded-xl font-bold transition-all shadow-sm whitespace-nowrap">
             <Trophy className="w-4 h-4" /> Contests
           </Link>
 
-          <Link href="/dashboard/placements/mock-oa" className="flex items-center gap-2 bg-violet-50 hover:bg-violet-100 border border-violet-200 text-violet-700 px-5 py-2.5 rounded-xl font-bold transition-all shadow-sm">
-            <Briefcase className="w-4 h-4" /> Mock OAs
+          <Link href="/dashboard/placements/mock-oa" className="flex items-center gap-2 bg-violet-50 hover:bg-violet-100 border border-violet-200 text-violet-700 px-4 py-2.5 rounded-xl font-bold transition-all shadow-sm whitespace-nowrap">
+            <Briefcase className="w-4 h-4" /> Mock OA Results
           </Link>
 
           {((isTpcCoord || isHOD) || role === "alumni") && (
-            <Link href="/dashboard/placements/new" className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-md">
+            <Link href="/dashboard/placements/new" className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-md whitespace-nowrap">
               <Plus className="w-4 h-4" /> Share Experience
             </Link>
           )}

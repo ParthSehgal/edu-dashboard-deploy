@@ -15,6 +15,7 @@ export default function ContestDetails({ params }) {
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [role, setRole] = useState("student");
+  const [isTpcCoord, setIsTpcCoord] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [timeLeft, setTimeLeft] = useState("");
   const [contestStatus, setContestStatus] = useState("upcoming"); // upcoming | live | ended
@@ -31,8 +32,9 @@ export default function ContestDetails({ params }) {
       if (res.data?.success) {
         setContest(res.data.data);
       }
-      if (roleRes.data?.data?.placementRole) {
-        setRole(roleRes.data.data.placementRole);
+      if (roleRes.data?.data) {
+        setRole(roleRes.data.data.placementRole || "student");
+        setIsTpcCoord(roleRes.data.data.isTpcCoord || false);
       }
       if (userRes.data?.data) {
         setCurrentUser(userRes.data.data);
@@ -165,6 +167,7 @@ export default function ContestDetails({ params }) {
             <div>
               <div className="flex items-center gap-3 mb-3">
                  <span className="text-xs font-black uppercase tracking-wider px-3 py-1 bg-amber-100 text-amber-700 rounded-full">{contest.platform}</span>
+                 {contest.contestType && <span className="text-xs font-black uppercase tracking-wider px-3 py-1 bg-blue-100 text-blue-700 rounded-full">{contest.contestType}</span>}
                  {contestStatus === "live" && <span className="text-[10px] bg-red-50 text-red-600 px-2.5 py-1 rounded-lg border border-red-100 font-black animate-pulse">LIVE NOW</span>}
                  {contestStatus === "upcoming" && <span className="text-[10px] bg-emerald-50 text-emerald-600 px-2.5 py-1 rounded-lg border border-emerald-100 font-black">UPCOMING</span>}
                  {contestStatus === "ended" && <span className="text-[10px] bg-slate-100 text-slate-500 px-2.5 py-1 rounded-lg border border-slate-200 font-black">ENDED</span>}
@@ -173,7 +176,7 @@ export default function ContestDetails({ params }) {
             </div>
             
             <div className="flex items-center gap-3 w-full md:w-auto">
-              {role === "senior" && (
+              {isTpcCoord && (
                 <button 
                   onClick={handleDeleteContest}
                   className="bg-red-50 hover:bg-red-100 text-red-600 px-4 py-4 rounded-2xl font-bold transition-all hover:-translate-y-1 flex items-center justify-center border border-red-200"
@@ -242,7 +245,7 @@ export default function ContestDetails({ params }) {
                 </div>
                 <div>
                   <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Duration</p>
-                  <p className="font-semibold text-slate-800">{durationStr}</p>
+                  <p className="font-semibold text-slate-800">{contest.time || durationStr}</p>
                 </div>
              </div>
              

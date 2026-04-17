@@ -54,17 +54,10 @@ exports.attachPlacementRole = async (req, res, next) => {
   try {
     const User = require("../models/user.model");
 
-    if (req.user.role === "professor") {
-      // Professors: fetch isHOD only
-      const user = await User.findById(req.user.id).select("isHOD");
-      req.isTpcCoord = false;
-      req.isHOD = user?.isHOD || false;
-    } else {
-      // Students, TAs, seniors, alumni: fetch isTpcCoord (and isHOD if applicable)
-      const user = await User.findById(req.user.id).select("isTpcCoord isHOD");
-      req.isTpcCoord = user?.isTpcCoord || false;
-      req.isHOD = user?.isHOD || false;
-    }
+    // Fetch isTpcCoord and isHOD for everyone
+    const user = await User.findById(req.user.id).select("isTpcCoord isHOD");
+    req.isTpcCoord = user?.isTpcCoord || false;
+    req.isHOD = user?.isHOD || false;
   } catch (e) {
     req.isTpcCoord = false;
     req.isHOD = false;

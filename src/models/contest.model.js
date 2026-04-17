@@ -15,6 +15,10 @@ const contestSchema = new mongoose.Schema(
       type: String,
       required: true
     },
+    contestType: {
+      type: String,
+      required: true // e.g., 'Virtual', 'Global', 'Hiring'
+    },
     startTime: {
       type: Date,
       required: true
@@ -22,6 +26,10 @@ const contestSchema = new mongoose.Schema(
     endTime: {
       type: Date,
       required: true
+    },
+    time: {
+      type: String,
+      required: true // e.g., '2 hours', '120 mins'
     },
     addedBy: {
       type: mongoose.Schema.Types.ObjectId,
