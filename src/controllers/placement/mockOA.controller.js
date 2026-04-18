@@ -18,8 +18,8 @@ exports.addOA = async (req, res) => {
   try {
     const { title, syllabus, date, students } = req.body;
 
-    if (req.placementRole !== "senior" && !req.isTpcCoord) {
-        return res.status(403).json({ message: "Only seniors or TPC Coordinators can create a Mock OA." });
+    if (!req.isTpcCoord) {
+        return res.status(403).json({ message: "Only TPC Coordinators can create a Mock OA." });
     }
 
     const mockOA = new MockOA({
@@ -44,8 +44,8 @@ exports.uploadResults = async (req, res) => {
     const { id } = req.params;
     const { students } = req.body; // students should be an array of { name, rollNo }
 
-    if (req.placementRole !== "senior" && !req.isTpcCoord) {
-        return res.status(403).json({ message: "Only seniors or TPC Coordinators can upload OA results." });
+    if (!req.isTpcCoord) {
+        return res.status(403).json({ message: "Only TPC Coordinators can upload OA results." });
     }
 
     const mockOA = await MockOA.findById(id);
@@ -66,8 +66,8 @@ exports.uploadResults = async (req, res) => {
 // DELETE MOCK OA (SENIOR ONLY)
 exports.deleteOA = async (req, res) => {
   try {
-    if (req.placementRole !== "senior" && !req.isTpcCoord) {
-      return res.status(403).json({ message: "Only seniors or TPC Coordinators can delete Mock OAs." });
+    if (!req.isTpcCoord) {
+      return res.status(403).json({ message: "Only TPC Coordinators can delete Mock OAs." });
     }
 
     const mockOA = await MockOA.findById(req.params.id);

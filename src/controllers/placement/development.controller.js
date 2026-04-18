@@ -32,8 +32,8 @@ exports.addDevQuestion = async (req, res) => {
   try {
     const { step, questionTitle, questionLink } = req.body;
 
-    if (req.placementRole !== "senior" && !req.isTpcCoord) {
-        return res.status(403).json({ message: "Only seniors or TPC Coordinators can add questions." });
+    if (!req.isTpcCoord) {
+        return res.status(403).json({ message: "Only TPC Coordinators can add questions." });
     }
 
     const question = new RoadmapQuestion({

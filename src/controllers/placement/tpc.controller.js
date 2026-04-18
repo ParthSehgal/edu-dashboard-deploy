@@ -19,11 +19,15 @@ exports.getSeniorsByDepartment = async (req, res) => {
     
     console.log(`[HOD LOG] Found ${students.length} students in branch ${hod.department}`);
 
-    // Include all students for visibility, but calculate their placement role
-    const processedStudents = students.map(u => {
-      try { return { ...u.toObject(), placementRole: getPlacementRole(u.collegeId) }; }
-      catch { return { ...u.toObject(), placementRole: "student" }; }
-    });
+    // Only include seniors (3rd/4th year) — filter using placementRole
+    const processedStudents = students
+      .map(u => {
+        try { return { ...u.toObject(), placementRole: getPlacementRole(u.collegeId) }; }
+        catch { return { ...u.toObject(), placementRole: "student" }; }
+      })
+      .filter(u => u.placementRole === "senior");
+
+    console.log(`[HOD LOG] Found ${processedStudents.length} eligible seniors in branch ${hod.department}`);
 
     res.status(200).json({ success: true, data: processedStudents });
   } catch (err) {
