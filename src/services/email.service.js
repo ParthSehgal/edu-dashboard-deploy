@@ -1,16 +1,15 @@
 const nodemailer = require("nodemailer");
 
+const port = Number(process.env.SMTP_PORT) || 587;
+
 // ── SMTP TRANSPORTER ───────────────────────────────────
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || "smtp.office365.com",
-  port: process.env.SMTP_PORT || 587,
-  secure: false,           // STARTTLS
+  port: port,
+  secure: port === 465, // True for 465 (Gmail SSL), false for 587 (STARTTLS)
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASSWORD
-  },
-  tls: {
-    ciphers: "SSLv3"
   }
 });
 
