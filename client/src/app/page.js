@@ -121,18 +121,32 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const res = await authAPI.login(collegeId, password);
-      
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
-      localStorage.setItem("role", res.data.user.role);
+      console.log(">>> INITIATING NATIVE FETCH BYPASS FOR LOGIN <<<");
 
-      router.push(`/dashboard/${res.data.user.role}`);
+      const response = await fetch('https://edu-dashboard-deploy.onrender.com/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ collegeId, password }) 
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw data; // Throw the response data object to handle unverified flag in catch
+      }
+      
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("role", data.user.role);
+
+      router.push(`/dashboard/${data.user.role}`);
     } catch (err) {
-      if (err.response?.data?.unverified) {
-        router.push(`/verify-otp?email=${encodeURIComponent(err.response.data.email)}`);
+      if (err.unverified) {
+        router.push(`/verify-otp?email=${encodeURIComponent(err.email)}`);
       } else {
-        setError(err.response?.data?.message || "Invalid credentials. Please try again.");
+        setError(err.message || "Invalid credentials. Please try again.");
       }
     } finally {
       setLoading(false);
