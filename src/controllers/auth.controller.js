@@ -58,7 +58,7 @@ exports.register = async (req, res) => {
     const matchesRegex = emailRegex.test(email);
     console.log(`Email check: role=${role}, email=${email}, matchesRegex=${matchesRegex}`);
 
-    if (role !== "professor" && role !== "alumni" && !matchesRegex) {
+    if (role === "student" && !matchesRegex) {
       console.log("Registration failed: Invalid email format check triggered");
       return res.status(400).json({
         message: "Invalid email. Must be in format: name_2401ai54@iitp.ac.in"
