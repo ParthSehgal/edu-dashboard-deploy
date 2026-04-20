@@ -9,7 +9,7 @@ exports.getPlacementRole = (collegeId) => {
   const month = now.getMonth() + 1;            // Jan=1 ... Dec=12
 
   // Academic year starts July — before July still in previous academic year
-  const academicYear = month >= 7 ? currentYear : currentYear - 1;
+  const academicYear = currentYear;
 
   const yearsCompleted = academicYear - yearJoined;
 
