@@ -49,7 +49,8 @@ export default function UploadScheduleModal({ isOpen, onClose, onUpload }) {
       formData.append('department', storedUser.department || 'Computer Science');
 
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/schedule/upload`, {
+      // In UploadScheduleModal.js
+      const response = await fetch(`https://edu-dashboard-deploy.onrender.com/api/schedule/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
