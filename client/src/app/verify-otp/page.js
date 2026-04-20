@@ -54,6 +54,8 @@ function VerifyOTPContent() {
     }
     setLoading(true);
     try {
+      console.log(">>> EXECUTING OTP VERIFY CODE - VERSION 2.0 <<<");
+      console.log("TARGET URL:", `https://edu-dashboard-deploy.onrender.com/api/auth/verify-otp`);
       await axios.post(`https://edu-dashboard-deploy.onrender.com/api/auth/verify-otp`, { email, otp: otpString });
       setSuccess("Account verified! Redirecting to login...");
       setTimeout(() => router.push("/"), 2000);
