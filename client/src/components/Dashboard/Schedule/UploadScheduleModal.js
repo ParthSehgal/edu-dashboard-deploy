@@ -22,11 +22,11 @@ export default function UploadScheduleModal({ isOpen, onClose, onUpload }) {
 
   const validateAndSetFile = (file) => {
     if (!file) return;
-    
+
     // Check extension
     const allowed = ['.pdf', '.xlsx', '.xls'];
     const extension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
-    
+
     if (allowed.includes(extension)) {
       setFile(file);
     } else {
@@ -37,7 +37,7 @@ export default function UploadScheduleModal({ isOpen, onClose, onUpload }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!file) return;
-    
+
     setIsUploading(true);
 
     try {
@@ -49,7 +49,7 @@ export default function UploadScheduleModal({ isOpen, onClose, onUpload }) {
       formData.append('department', storedUser.department || 'Computer Science');
 
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/schedule/upload', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/schedule/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -62,7 +62,7 @@ export default function UploadScheduleModal({ isOpen, onClose, onUpload }) {
       }
 
       const responseData = await response.json();
-      
+
       onUpload(responseData.schedule);
       onClose();
       setFile(null);
@@ -85,13 +85,13 @@ export default function UploadScheduleModal({ isOpen, onClose, onUpload }) {
             <X className="w-5 h-5" />
           </button>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="p-6">
           <div className="mb-4 text-[#736d65] text-sm">
             You are uploading the master schedule for your department. This will overwrite the previous schedule visible to all students.
           </div>
 
-          <div 
+          <div
             className="border-2 border-dashed border-[#e6e2d8] rounded-xl p-8 flex flex-col items-center justify-center bg-white/50 hover:bg-[#fcfaf7] transition-colors cursor-pointer"
             onDragOver={(e) => e.preventDefault()}
             onDrop={handleDrop}
@@ -99,40 +99,40 @@ export default function UploadScheduleModal({ isOpen, onClose, onUpload }) {
           >
             {!file ? (
               <>
-                 <UploadCloud className="w-10 h-10 text-[#a99c85] mb-3" />
+                <UploadCloud className="w-10 h-10 text-[#a99c85] mb-3" />
                 <p className="text-sm font-medium text-[#2d2a26]">Click to upload or drag and drop</p>
                 <p className="text-xs text-[#736d65] mt-1">.pdf, .xlsx, .xls only</p>
               </>
             ) : (
               <div className="flex flex-col items-center text-center">
-                 {isExcelFile ? (
-                   <FileSpreadsheet className="w-10 h-10 text-green-600 mb-3" />
-                 ) : (
-                   <FileText className="w-10 h-10 text-red-500 mb-3" />
-                 )}
+                {isExcelFile ? (
+                  <FileSpreadsheet className="w-10 h-10 text-green-600 mb-3" />
+                ) : (
+                  <FileText className="w-10 h-10 text-red-500 mb-3" />
+                )}
                 <p className="text-sm font-medium text-[#2d2a26] truncate max-w-[200px]">{file.name}</p>
                 <p className="text-xs text-[#736d65] mt-1">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
               </div>
             )}
-            
-            <input 
-              id="schedule-upload" 
-              type="file" 
-              accept=".pdf,.xlsx,.xls" 
-              className="hidden" 
+
+            <input
+              id="schedule-upload"
+              type="file"
+              accept=".pdf,.xlsx,.xls"
+              className="hidden"
               onChange={handleFileSelect}
             />
           </div>
 
           <div className="mt-6 flex justify-end gap-3">
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={onClose}
               className="px-4 py-2 text-sm font-medium text-[#736d65] hover:text-[#2d2a26] transition-colors"
             >
               Cancel
             </button>
-            <button 
+            <button
               type="submit"
               disabled={!file || isUploading}
               className="bg-[#2d2a26] text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-[#1a1816] transition-colors disabled:opacity-50 flex items-center justify-center min-w-[100px]"
