@@ -51,6 +51,12 @@ export const coursesAPI = {
   },
   updateCourse: async (id, courseData) => {
     return api.put(`/courses/${id}`, courseData);
+  },
+  requestTaAssignment: async (id) => {
+    return api.post(`/courses/${id}/request-ta`);
+  },
+  reviewTaRequest: async (id, taId, status) => {
+    return api.patch(`/courses/${id}/review-ta`, { taId, status });
   }
 };
 

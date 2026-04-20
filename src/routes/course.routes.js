@@ -27,6 +27,10 @@ router.get("/:id/students/search", protect, searchStudents);
 // Student only
 router.post("/:id/enroll", protect, restrictTo("student"), enrollInCourse);
 
+// TA assignment requests
+router.post("/:id/request-ta", protect, restrictTo("ta"), courseController.requestTaAssignment);
+router.patch("/:id/review-ta", protect, restrictTo("professor"), courseController.reviewTaRequest);
+
 // Single course — public
 router.get("/:id", getSingleCourse);
 

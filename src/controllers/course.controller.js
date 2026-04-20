@@ -35,11 +35,18 @@ exports.getCourses = async (req, res, next) => {
         // Use regex to match courses whose 3rd character equals the student's year
         filter.courseId = new RegExp(`^[A-Z]{2}${year}`);
       }
+    } else if (req.user && req.user.role === 'ta') {
+      const User = require("../models/user.model");
+      const taUser = await User.findById(req.user.id).select('department');
+
+      if (taUser && taUser.department && taUser.department !== 'Unknown') {
+        filter.department = taUser.department;
+      }
     }
 
     const courses = await Course.find(filter)
       .populate("instructor", "name email collegeId")
-      .select("-students -tas");
+      .select("-students");
     return success(res, "Courses fetched successfully", courses);
   } catch (error) {
     next(error);
@@ -288,6 +295,62 @@ exports.getMyAssignments = async (req, res, next) => {
     }));
 
     return res.status(200).json({ success: true, count: data.length, data });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 9. Request to be a TA
+exports.requestTaAssignment = async (req, res, next) => {
+  try {
+    const customCourseId = req.params.id;
+    const course = await Course.findOne({ courseId: customCourseId });
+    if (!course) return res.status(404).json({ message: "Course not found" });
+
+    if (req.user.role !== 'ta') {
+      return res.status(403).json({ message: "Only TAs can request to be assigned to a course." });
+    }
+
+    if (course.tas.includes(req.user.id)) {
+      return res.status(400).json({ message: "You are already a TA for this course." });
+    }
+    if (course.pendingTAs.includes(req.user.id)) {
+      return res.status(400).json({ message: "You have already requested to TA this course." });
+    }
+
+    course.pendingTAs.push(req.user.id);
+    await course.save();
+
+    return success(res, "Requested to TA successfully", course);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 10. Review TA Request (Professor only)
+exports.reviewTaRequest = async (req, res, next) => {
+  try {
+    const customCourseId = req.params.id;
+    const { taId, status } = req.body; // status: 'approved' or 'rejected'
+
+    const course = await Course.findOne({ courseId: customCourseId });
+    if (!course) return res.status(404).json({ message: "Course not found" });
+
+    if (course.instructor.toString() !== req.user.id) {
+      return res.status(403).json({ message: "Forbidden: You are not the instructor of this course." });
+    }
+
+    // Remove from pending
+    course.pendingTAs = course.pendingTAs.filter(id => id.toString() !== taId);
+
+    if (status === 'approved') {
+      if (!course.tas.includes(taId)) {
+        course.tas.push(taId);
+      }
+    }
+
+    await course.save();
+    return success(res, `TA request ${status}`, course);
   } catch (error) {
     next(error);
   }

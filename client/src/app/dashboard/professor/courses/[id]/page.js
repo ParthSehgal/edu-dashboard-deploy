@@ -136,6 +136,16 @@ export default function ProfessorCourseDetail({ params }) {
     }
   };
 
+  const handleReviewTA = async (taId, status) => {
+    try {
+      await coursesAPI.reviewTaRequest(courseCode, taId, status);
+      alert(`TA request ${status} successfully.`);
+      fetchCourse(courseCode);
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to review TA request");
+    }
+  };
+
   if (loading) return <DashboardLayout requiredRole="professor"><div className="flex justify-center mt-20"><div className="w-8 h-8 rounded-full border-4 border-indigo-200 border-t-indigo-600 animate-spin"></div></div></DashboardLayout>;
   if (!course) return <DashboardLayout requiredRole="professor"><div className="mt-20 text-center text-slate-500">Course not found.</div></DashboardLayout>;
 
@@ -250,6 +260,61 @@ export default function ProfessorCourseDetail({ params }) {
         </div>
 
         <div className="col-span-1 space-y-8">
+          {/* Pending TA Requests */}
+          {course.pendingTAs && course.pendingTAs.length > 0 && (
+            <div className="bg-amber-50 rounded-2xl border border-amber-200 shadow-sm p-6">
+              <h2 className="text-lg font-bold text-amber-900 mb-4 flex items-center gap-2 border-b border-amber-200 pb-4">
+                <Users className="w-5 h-5 text-amber-600" /> Pending TA Requests
+              </h2>
+              <div className="space-y-3">
+                {course.pendingTAs.map((ta) => (
+                  <div key={ta._id} className="bg-white p-4 rounded-xl border border-amber-100 flex flex-col gap-3 shadow-sm">
+                    <div>
+                      <p className="text-sm font-bold text-slate-800">{ta.name}</p>
+                      <p className="text-xs text-slate-500">{ta.collegeId || ta.email}</p>
+                    </div>
+                    <div className="flex gap-2 mt-1">
+                      <button 
+                        onClick={() => handleReviewTA(ta._id, 'rejected')}
+                        className="flex-1 bg-white border border-slate-200 text-slate-600 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 text-xs font-bold py-1.5 rounded-lg transition-colors"
+                      >
+                        Decline
+                      </button>
+                      <button 
+                        onClick={() => handleReviewTA(ta._id, 'approved')}
+                        className="flex-1 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold py-1.5 rounded-lg transition-colors"
+                      >
+                        Accept
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Assigned TAs */}
+          {course.tas && course.tas.length > 0 && (
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+              <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2 border-b pb-4">
+                <CheckCircle className="w-5 h-5 text-emerald-500" /> Assigned TAs
+              </h2>
+              <div className="space-y-3">
+                {course.tas.map((ta) => (
+                  <div key={ta._id} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                    <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold">
+                      {ta.name?.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-slate-800 leading-none">{ta.name}</p>
+                      <p className="text-xs text-slate-500 mt-1">{ta.collegeId || ta.email}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Trie Search Section */}
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
             <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2 border-b pb-4">

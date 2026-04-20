@@ -80,6 +80,12 @@ const courseSchema = new mongoose.Schema(
         ref: "User"
       }
     ],
+    pendingTAs: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+      }
+    ],
     students: [
       {
         type: mongoose.Schema.Types.ObjectId,

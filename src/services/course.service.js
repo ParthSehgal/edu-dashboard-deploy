@@ -21,7 +21,9 @@ const Course = require('../models/course.model');
 exports.getCourseById = async (courseIdParam) => {
     const course = await Course.findOne({ courseId: courseIdParam })
         .populate('instructor', 'name email collegeId') 
-        .populate('students', 'name email collegeId isCR'); 
+        .populate('students', 'name email collegeId isCR')
+        .populate('pendingTAs', 'name email collegeId')
+        .populate('tas', 'name email collegeId'); 
 
     if (!course) {
         const error = new Error('Course not found');
