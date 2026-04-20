@@ -57,7 +57,7 @@ exports.register = async (req, res) => {
     // 2. Validate email format (skip strict regex for professors)
     const matchesRegex = emailRegex.test(email);
     console.log(`Email check: role=${role}, email=${email}, matchesRegex=${matchesRegex}`);
-    
+
     if (role !== "professor" && role !== "alumni" && !matchesRegex) {
       console.log("Registration failed: Invalid email format check triggered");
       return res.status(400).json({
@@ -84,7 +84,7 @@ exports.register = async (req, res) => {
         console.log("Existing unverified user found. Updating details and generating new OTP.");
         const otp = generateOTP();
         const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
-        
+
         userExists.name = name;
         userExists.role = role;
         userExists.collegeId = collegeId;
@@ -94,9 +94,9 @@ exports.register = async (req, res) => {
         userExists.otp = await bcrypt.hash(otp, 10);
         userExists.otpExpiry = otpExpiry;
         userExists.isHOD = role === "professor" ? (isHOD || false) : false;
-        
+
         await userExists.save();
-        
+
         await sendOTPEmail(userExists.email, otp);
         return res.status(200).json({
           success: true,
@@ -114,7 +114,7 @@ exports.register = async (req, res) => {
     console.log(`Role: ${role} | Name: ${name} | Email: ${email}`);
     console.log(`Generated OTP: ${otp}`);
     console.log(`-------------------------------\n`);
-    
+
     const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
     const hashedOTP = await bcrypt.hash(otp, 10);
 
@@ -154,6 +154,7 @@ exports.register = async (req, res) => {
 exports.verifyOTP = async (req, res) => {
   try {
     const { email, otp } = req.body;
+    console.log(`[OTP] Verifying email: ${email} | Provided OTP: ${otp}`);
 
     if (!email || !otp) {
       return res.status(400).json({ message: "Email and OTP are required" });
@@ -168,18 +169,43 @@ exports.verifyOTP = async (req, res) => {
       return res.status(400).json({ message: "Account already verified. Please login." });
     }
 
-    if (!user.otpExpiry || user.otpExpiry < new Date()) {
+    // Check 1: Expiry
+    const currentTime = new Date();
+    console.log(`[OTP] Expiry in DB: ${user.otpExpiry} | Current Time: ${currentTime}`);
+
+    if (!user.otpExpiry || user.otpExpiry < currentTime) {
       return res.status(400).json({ message: "OTP has expired. Please register again." });
     }
 
-    const isMatch = await bcrypt.compare(otp, user.otp);
+    // Check 2: The Match (Bulletproof Logic)
+    let isMatch = false;
+    const providedOtpStr = String(otp).trim();
+    const dbOtpStr = String(user.otp);
+
+    // Fallback A: Did the DB save it as plain text?
+    if (dbOtpStr === providedOtpStr) {
+      console.log("[OTP] Matched via Plaintext comparison!");
+      isMatch = true;
+    }
+    // Fallback B: Did the DB save it as a Bcrypt hash?
+    else {
+      try {
+        isMatch = await bcrypt.compare(providedOtpStr, dbOtpStr);
+        if (isMatch) console.log("[OTP] Matched via Bcrypt hash!");
+      } catch (err) {
+        console.error("[OTP] Bcrypt compare failed:", err);
+      }
+    }
+
     if (!isMatch) {
+      console.log(`[OTP] Rejecting! Provided: ${providedOtpStr} did not match DB: ${dbOtpStr}`);
       return res.status(400).json({ message: "Invalid OTP" });
     }
 
+    // Success! Clean up the user object
     user.isVerified = true;
-    user.otp = null;
-    user.otpExpiry = null;
+    user.otp = undefined; // Use undefined instead of null to properly remove it from some Mongoose schemas
+    user.otpExpiry = undefined;
     await user.save();
 
     res.json({
@@ -188,10 +214,10 @@ exports.verifyOTP = async (req, res) => {
     });
 
   } catch (error) {
+    console.error("[OTP] Fatal Error:", error);
     res.status(500).json({ error: error.message });
   }
 };
-
 // ── LOGIN ──────────────────────────────────────────────────────
 exports.login = async (req, res) => {
   try {
@@ -214,12 +240,12 @@ exports.login = async (req, res) => {
       user.otp = await bcrypt.hash(otp, 10);
       user.otpExpiry = otpExpiry;
       await user.save();
-      
+
       await sendOTPEmail(user.email, otp);
-      return res.status(403).json({ 
+      return res.status(403).json({
         message: "Account not verified. A new OTP has been sent to your email.",
         unverified: true,
-        email: user.email 
+        email: user.email
       });
     }
 
@@ -246,8 +272,8 @@ exports.login = async (req, res) => {
 
     // ── Use calculated role for students who become seniors/alumni ────────
     // But keep "professor" and "ta" roles as they are.
-    const effectiveRole = (user.role === "professor" || user.role === "ta") 
-      ? user.role 
+    const effectiveRole = (user.role === "professor" || user.role === "ta")
+      ? user.role
       : (placementRole === "alumni" ? "alumni" : user.role);
 
     res.json({
