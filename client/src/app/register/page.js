@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { authAPI } from "@/lib/api";
+import axios from "axios";
 
 const ROLES = [
   { label: "Student",   value: "student",   hint: "1st - 4th year" },
@@ -32,15 +33,17 @@ export default function RegisterPage() {
     setError("");
 
     try {
-      await authAPI.register(
-        formData.name,
-        formData.collegeId,
-        formData.email,
-        formData.password,
-        formData.role,
-        formData.role === "professor" ? formData.department : undefined,
-        formData.role === "professor" ? formData.isHOD : false
-      );
+      const payload = {
+        name: formData.name,
+        collegeId: formData.collegeId,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+        department: formData.role === "professor" ? formData.department : undefined,
+        isHOD: formData.role === "professor" ? formData.isHOD : false
+      };
+      
+      await axios.post("https://edu-dashboard-deploy.onrender.com/api/auth/register", payload);
 
       router.push(`/verify-otp?email=${encodeURIComponent(formData.email)}`);
 
