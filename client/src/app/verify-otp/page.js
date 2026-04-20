@@ -54,7 +54,7 @@ function VerifyOTPContent() {
     }
     setLoading(true);
     try {
-      await authAPI.verifyOTP(email, otpString);
+      await axios.post(`https://edu-dashboard-deploy.onrender.com/api/auth/verify-otp`, { email, otp: otpString });
       setSuccess("Account verified! Redirecting to login...");
       setTimeout(() => router.push("/"), 2000);
     } catch (err) {
