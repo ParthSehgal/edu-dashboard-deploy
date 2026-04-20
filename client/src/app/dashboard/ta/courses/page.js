@@ -43,7 +43,7 @@ export default function TACourses() {
         <section className="mb-12">
           {courses.length === 0 ? (
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-8 text-center text-slate-500 text-sm">
-              You haven't been assigned to TA any courses yet.
+              You haven&apos;t been assigned to TA any courses yet.
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">

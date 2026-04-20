@@ -333,7 +333,7 @@ export default function ProfessorDashboard() {
                     <span className="text-[10px] text-slate-500 font-bold">By {talk.author?.name} · {talk.author?.department}</span>
                   </div>
                   <h3 className="text-lg font-bold text-slate-800 mb-1">{talk.title}</h3>
-                  <p className="text-sm text-slate-500 line-clamp-1 italic">"{talk.body.substring(0, 100)}..."</p>
+                  <p className="text-sm text-slate-500 line-clamp-1 italic">&quot;{talk.body.substring(0, 100)}...&quot;</p>
                 </div>
 
                 <div className="flex items-center gap-3">
