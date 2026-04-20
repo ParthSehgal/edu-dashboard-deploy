@@ -22,4 +22,4 @@ RUN g++ -o /app/src/trie/trie_engine /app/src/trie/*.cpp || echo "C++ Compilatio
 EXPOSE 3000
 
 # Start the server
-CMD ["node", "src/app.js"]
+CMD ["node", "server.js"]
