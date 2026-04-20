@@ -54,13 +54,27 @@ function VerifyOTPContent() {
     }
     setLoading(true);
     try {
-      console.log(">>> EXECUTING OTP VERIFY CODE - VERSION 2.0 <<<");
-      console.log("TARGET URL:", `https://edu-dashboard-deploy.onrender.com/api/auth/verify-otp`);
-      await axios.post(`https://edu-dashboard-deploy.onrender.com/api/auth/verify-otp`, { email, otp: otpString });
+      console.log(">>> INITIATING NATIVE FETCH BYPASS <<<");
+
+      const response = await fetch('https://edu-dashboard-deploy.onrender.com/api/auth/verify-otp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, otp: otpString })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Invalid or expired OTP. Please try again.");
+      }
+
+      // If we get here, it was successful!
       setSuccess("Account verified! Redirecting to login...");
       setTimeout(() => router.push("/"), 2000);
     } catch (err) {
-      setError(err.response?.data?.message || "Invalid or expired OTP. Please try again.");
+      setError(err.message || "Invalid or expired OTP. Please try again.");
     } finally {
       setLoading(false);
     }
