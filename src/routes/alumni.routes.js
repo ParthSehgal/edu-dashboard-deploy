@@ -9,6 +9,7 @@ const {
   addComment,
   deleteTalk,
   getPendingPosts,
+  getPendingTalks,
   reviewTalk,
   createSession,
   getAllSessions,
@@ -25,6 +26,7 @@ router.use(attachPlacementRole); // attaches req.placementRole (senior/student/a
 
 // TPC Review routes (no overlap with /talks or /sessions)
 router.get("/pending", getPendingPosts);
+router.get("/pending-talks", getPendingTalks);
 router.patch("/talks/:id/review", reviewTalk);
 router.patch("/session/:id/review", reviewSession);
 

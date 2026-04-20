@@ -246,6 +246,7 @@ export const alumniAPI = {
 
   // TPC Review
   getPendingPosts: async () => api.get('/alumni/pending'),
+  getPendingTalks: async () => api.get('/alumni/pending-talks'),
   reviewTalk: async (id, status, rejectionReason) => api.patch(`/alumni/talks/${id}/review`, { status, rejectionReason }),
   reviewSession: async (id, status, rejectionReason) => api.patch(`/alumni/session/${id}/review`, { status, rejectionReason })
 };
