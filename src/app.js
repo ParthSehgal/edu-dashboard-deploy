@@ -23,7 +23,6 @@ const alumniRoutes = require("./routes/alumni.routes");
 const taRoutes = require("./routes/ta.routes");
 const taRequestRoutes = require("./routes/taRequest.routes");
 
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // Routes
 app.use("/api/auth", authRoutes);

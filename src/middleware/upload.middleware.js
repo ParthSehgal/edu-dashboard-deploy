@@ -1,15 +1,6 @@
 const multer = require("multer");
 const path = require("path");
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/");
-  },
-  filename: (req, file, cb) => {
-    // Keep the original name but add a timestamp to prevent overwriting files with the same name
-    cb(null, Date.now() + "-" + file.originalname);
-  }
-});
+const { storage } = require("../config/cloudinary");
 
 // The security filter
 const fileFilter = (req, file, cb) => {

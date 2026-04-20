@@ -33,7 +33,7 @@ exports.uploadSchedule = async (req, res) => {
       { department },
       {
         department,
-        fileUrl: `/uploads/${req.file.originalname}`, // Mock URL for now
+        fileUrl: req.file.path,
         fileType,
         uploadedBy: req.user.id,
         parsedData
