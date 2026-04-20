@@ -31,8 +31,8 @@ exports.register = async (req, res) => {
 
     // Dynamic Department Extraction from College ID (e.g., 2401AI54 -> AI)
     let department = "Unknown";
-    if (role === "professor" && bodyDepartment) {
-      department = bodyDepartment;
+    if (role === "professor") {
+      department = bodyDepartment || "Unknown";
     } else {
       const match = collegeId.match(/[a-zA-Z]+/);
       if (match) {
