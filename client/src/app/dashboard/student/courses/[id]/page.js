@@ -136,7 +136,7 @@ export default function StudentCourseDetail({ params }) {
                       <h3 className="font-bold text-slate-800">{asmnt.title}</h3>
                       <p className="text-sm text-slate-500 mt-1">{asmnt.description}</p>
                       {asmnt.fileUrl && (
-                        <a href={`http://localhost:${process.env.NEXT_PUBLIC_BACKEND_PORT || '5000'}/${asmnt.fileUrl}`} target="_blank" className="text-xs text-indigo-600 mt-2 inline-block hover:underline">Download Attached Resource</a>
+                        <a href={asmnt.fileUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-600 mt-2 inline-block hover:underline">Download Attached Resource</a>
                       )}
                     </div>
                     <div>

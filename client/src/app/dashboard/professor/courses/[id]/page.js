@@ -213,7 +213,7 @@ export default function ProfessorCourseDetail({ params }) {
                         
                         {asmnt.fileUrl && (
                           <div className="mt-4 flex gap-4 text-sm font-semibold text-indigo-600 mb-4 border-b border-slate-100 pb-4">
-                            <a href={`http://localhost:${process.env.NEXT_PUBLIC_BACKEND_PORT || '5000'}/${asmnt.fileUrl}`} target="_blank" className="bg-indigo-50 px-3 py-1.5 rounded-md hover:bg-indigo-100 transition-colors">View Uploaded Material</a>
+                            <a href={asmnt.fileUrl} target="_blank" rel="noopener noreferrer" className="bg-indigo-50 px-3 py-1.5 rounded-md hover:bg-indigo-100 transition-colors">View Uploaded Material</a>
                           </div>
                         )}
                         
@@ -232,7 +232,7 @@ export default function ProfessorCourseDetail({ params }) {
                                       <p className="text-sm font-medium text-slate-800">{sub.student?.name} <span className="text-xs text-slate-500">({sub.student?.collegeId})</span></p>
                                     </div>
                                     {sub.fileUrl && (
-                                      <a href={`http://localhost:${process.env.NEXT_PUBLIC_BACKEND_PORT || '5000'}/${sub.fileUrl}`} target="_blank" className="text-xs text-indigo-600 font-semibold bg-indigo-50 px-2 py-1 round-md hover:bg-indigo-100 transition-colors rounded">Download</a>
+                                      <a href={sub.fileUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-600 font-semibold bg-indigo-50 px-2 py-1 round-md hover:bg-indigo-100 transition-colors rounded">Download</a>
                                     )}
                                   </div>
                                 ))}

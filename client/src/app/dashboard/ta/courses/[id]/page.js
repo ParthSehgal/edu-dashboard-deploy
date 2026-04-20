@@ -123,7 +123,7 @@ export default function TACourseDetail({ params }) {
                         <p className="text-sm text-slate-500">Submitted by: <span className="font-medium text-slate-700">{sub.student?.name} ({sub.student?.collegeId})</span></p>
                         
                         {sub.fileUrl && (
-                          <a href={`http://localhost:${process.env.NEXT_PUBLIC_BACKEND_PORT || '5000'}/${sub.fileUrl}`} target="_blank" className="text-xs text-indigo-600 font-semibold mt-3 inline-block hover:underline">Download Submission File</a>
+                          <a href={sub.fileUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-600 font-semibold mt-3 inline-block hover:underline">Download Submission File</a>
                         )}
                       </div>
                       <div className="flex flex-col gap-2">
