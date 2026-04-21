@@ -210,6 +210,9 @@ export const contestAPI = {
   },
   deleteContest: async (id) => {
     return api.delete(`/placement/contests/${id}`);
+  },
+  getUpcomingContests: async () => {
+    return api.get('/placement/contests/upcoming');
   }
 };
 

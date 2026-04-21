@@ -11,6 +11,7 @@ export default function ContestsHub() {
   const router = useRouter();
   
   const [contests, setContests] = useState([]);
+  const [upcomingCodeforces, setUpcomingCodeforces] = useState([]);
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState("student");
   const [isTpcCoord, setIsTpcCoord] = useState(false);
@@ -25,18 +26,24 @@ export default function ContestsHub() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [roleRes, contestRes] = await Promise.all([
+      const [roleRes, contestRes, upcomingRes] = await Promise.all([
         placementAPI.getPlacementRole(),
-        contestAPI.getContests().catch(() => ({ data: { data: [] } }))
+        contestAPI.getContests().catch(() => ({ data: { data: [] } })),
+        contestAPI.getUpcomingContests().catch(() => ({ data: { data: [] } }))
       ]);
+
       if (roleRes.data?.data) {
         setRole(roleRes.data.data.placementRole || "student");
         setIsTpcCoord(roleRes.data.data.isTpcCoord || false);
       }
+
       const raw = contestRes.data?.data || [];
-      // Most recently added contest first
       const sorted = [...raw].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       setContests(sorted);
+
+      if (upcomingRes.data?.data) {
+        setUpcomingCodeforces(upcomingRes.data.data);
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -105,6 +112,64 @@ export default function ContestsHub() {
           </button>
         )}
       </div>
+      {/* UPCOMING GLOBAL CONTESTS (FROM CODEFORCES API) */}
+      {!loading && upcomingCodeforces.length > 0 && (
+        <div className="mb-12">
+          <div className="flex items-center gap-2 mb-6">
+            <div className="p-2 bg-indigo-100 rounded-lg">
+              <Timer className="w-5 h-5 text-indigo-600" />
+            </div>
+            <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Global Contest Feed</h2>
+            <span className="px-2 py-0.5 bg-slate-100 text-slate-500 text-[10px] font-bold rounded-md ml-2 flex items-center gap-1">
+              <div className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse"></div> LIVE FEED
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+            {upcomingCodeforces.map((contest) => {
+              const contestDate = new Date(contest.startTimeSeconds * 1000);
+              const formattedDate = contestDate.toLocaleString(); // User's requested format
+
+              return (
+                <a 
+                  key={contest.id} 
+                  href={`https://codeforces.com/contests/${contest.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-indigo-100 transition-all flex flex-col justify-between min-h-[160px]"
+                >
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                       <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${
+                         contest.type === 'CF' ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'
+                       }`}>
+                         {contest.type}
+                       </span>
+                       <span className="text-[10px] font-bold text-slate-400">Codeforces</span>
+                    </div>
+                    <h4 className="text-sm font-bold text-slate-800 line-clamp-2 leading-snug group-hover:text-indigo-600 transition-colors">
+                      {contest.name}
+                    </h4>
+                  </div>
+                  
+                  <div className="mt-4 pt-3 border-t border-slate-50">
+                    <div className="flex justify-between items-center text-[10px] font-bold text-slate-500 mb-2">
+                      <div className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3 text-indigo-500" />
+                        <span>{formattedDate}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                       <span className="text-[10px] text-slate-400">Duration: {Math.floor(contest.durationSeconds / 3600)}h</span>
+                       <ExternalLink className="w-3 h-3 text-slate-300 group-hover:text-indigo-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                    </div>
+                  </div>
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {loading ? (
         <div className="flex justify-center my-32"><div className="w-10 h-10 rounded-full border-4 border-amber-100 border-t-amber-500 animate-spin"></div></div>
