@@ -166,7 +166,7 @@ export default function PlacementsFeed() {
           <h2 className="text-2xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
             <Briefcase className="w-6 h-6 text-amber-500" /> Tech Updates <span className="text-slate-400 text-sm font-medium">from Alumni</span>
           </h2>
-          <Link href="/dashboard/alumni" className="text-xs font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100">
+          <Link href="/dashboard/placements/tech-updates" className="text-xs font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100">
             View All Updates
           </Link>
         </div>
