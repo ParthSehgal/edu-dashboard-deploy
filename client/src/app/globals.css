@@ -5,6 +5,5 @@
 @layer base {
   body {
     @apply antialiased bg-gray-50 text-slate-800;
-    zoom: 0.8;
   }
 }

@@ -62,15 +62,12 @@ const userSchema = new mongoose.Schema(
       type: Date,          // OTP expires after 5 minutes
       default: null
     },
-
-
     // Used to denote if a Student is a Class Representative 
     // This allows them to upload branch schedules
     isCR: {
       type: Boolean,
       default: false
     },
-
     // ── TPC COORDINATOR ────────────────────────────────────────
     // Set to true by HOD. Only TPC Coords can post contests & tech updates.
     isTpcCoord: {
@@ -138,14 +135,12 @@ const userSchema = new mongoose.Schema(
       taGradeSubmit: { type: Boolean, default: true },
       weeklyPerformanceSummary: { type: Boolean, default: true }
     },
-
     targetRoles: [
       {
         type: String,
         trim: true
       }],
 
-    // ── ROADMAP PROGRESS ───────────────────────────────────────
     completedRoadmapQuestions: [
       {
         type: mongoose.Schema.Types.ObjectId,
