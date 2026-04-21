@@ -34,13 +34,13 @@ const courseSchema = new mongoose.Schema(
       required: true,
       enum: [
         "CSE",
-        "Mech",
+        "Mechanical",
         "Electrical",
         "Data Science",
         "Mathematics and Computing",
-        "AI",
         "Civil",
         "Humanities",
+        "Metallurgy",
         "Unknown"
       ]
     },

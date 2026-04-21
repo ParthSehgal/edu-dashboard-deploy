@@ -41,14 +41,14 @@ exports.register = async (req, res) => {
           "EE": "Electrical",
           "DS": "Data Science",
           "MC": "Mathematics and Computing",
-          "ME": "Mech",
-          "MECH": "Mech",
+          "ME": "Mechanical",
+          "MECH": "Mechanical",
           "CS": "CSE",
-          "CSE": "CSE",
-          "AI": "AI",
+          "AI": "CSE",
           "CE": "Civil",
           "CIVIL": "Civil",
-          "HS": "Humanities"
+          "HS": "Humanities",
+          "MM": "Metallurgy"
         };
         if (map[code]) department = map[code];
       }

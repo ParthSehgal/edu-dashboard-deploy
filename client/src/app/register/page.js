@@ -7,10 +7,10 @@ import { authAPI } from "@/lib/api";
 import axios from "axios";
 
 const ROLES = [
-  { label: "Student",   value: "student",   hint: "1st - 4th year" },
-  { label: "TA",        value: "ta",         hint: "Teaching Assistant" },
-  { label: "Professor", value: "professor",  hint: "Faculty" },
-  { label: "Alumni",    value: "alumni",     hint: "Graduated" },
+  { label: "Student", value: "student", hint: "1st - 4th year" },
+  { label: "TA", value: "ta", hint: "Teaching Assistant" },
+  { label: "Professor", value: "professor", hint: "Faculty" },
+  { label: "Alumni", value: "alumni", hint: "Graduated" },
 ];
 
 export default function RegisterPage() {
@@ -42,7 +42,7 @@ export default function RegisterPage() {
         department: formData.role === "professor" ? formData.department : undefined,
         isHOD: formData.role === "professor" ? formData.isHOD : false
       };
-      
+
       await axios.post("https://edu-dashboard-deploy.onrender.com/api/auth/register", payload);
 
       router.push(`/verify-otp?email=${encodeURIComponent(formData.email)}`);
@@ -86,11 +86,10 @@ export default function RegisterPage() {
                   key={r.value}
                   type="button"
                   onClick={() => setFormData({ ...formData, role: r.value })}
-                  className={`py-3 px-4 rounded-xl text-sm font-medium transition-all text-left border ${
-                    formData.role === r.value
-                      ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
-                      : "bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:text-indigo-600"
-                  }`}
+                  className={`py-3 px-4 rounded-xl text-sm font-medium transition-all text-left border ${formData.role === r.value
+                    ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
+                    : "bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:text-indigo-600"
+                    }`}
                 >
                   <p className="font-semibold">{r.label}</p>
                   <p className={`text-xs mt-0.5 ${formData.role === r.value ? "text-indigo-200" : "text-slate-400"}`}>
@@ -123,9 +122,9 @@ export default function RegisterPage() {
                 <option value="Electrical">Electrical</option>
                 <option value="Data Science">Data Science</option>
                 <option value="Mathematics and Computing">Mathematics and Computing</option>
-                <option value="AI">AI</option>
                 <option value="Civil">Civil</option>
                 <option value="Humanities">Humanities</option>
+                <option value="Metallurgy">Metallurgy</option>
                 <option value="Unknown">Other / Unknown</option>
               </select>
             </div>
@@ -133,8 +132,8 @@ export default function RegisterPage() {
 
           {formData.role === "professor" && (
             <div className="flex items-center gap-3 bg-indigo-50/50 p-4 rounded-xl border border-indigo-100">
-              <input 
-                type="checkbox" 
+              <input
+                type="checkbox"
                 id="isHOD"
                 checked={formData.isHOD}
                 onChange={(e) => setFormData({ ...formData, isHOD: e.target.checked })}

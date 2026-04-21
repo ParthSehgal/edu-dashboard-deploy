@@ -38,13 +38,13 @@ const userSchema = new mongoose.Schema(
       required: true,
       enum: [
         "CSE",
-        "Mech",
+        "Mechanical",
         "Electrical",
         "Data Science",
         "Mathematics and Computing",
-        "AI",
         "Civil",
         "Humanities",
+        "Metallurgy",
         "Unknown"
       ]
     },
@@ -83,7 +83,7 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     },
-    
+
     // ── PROFILE PREFERENCES & ACADEMICS ────────────────────────
     emailNotifications: {
       type: Boolean,
@@ -135,8 +135,8 @@ const userSchema = new mongoose.Schema(
       default: ""
     },
     notifications: {
-      taGradeSubmit:           { type: Boolean, default: true },
-      weeklyPerformanceSummary:{ type: Boolean, default: true }
+      taGradeSubmit: { type: Boolean, default: true },
+      weeklyPerformanceSummary: { type: Boolean, default: true }
     },
 
     targetRoles: [
