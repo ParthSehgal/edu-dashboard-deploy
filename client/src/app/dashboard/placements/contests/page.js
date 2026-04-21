@@ -126,14 +126,14 @@ export default function ContestsHub() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-            {upcomingCodeforces.map((contest) => {
-              const contestDate = new Date(contest.startTimeSeconds * 1000);
+            {upcomingCodeforces.map((contest, idx) => {
+              const contestDate = new Date(contest.startTime);
               const formattedDate = contestDate.toLocaleString(); // User's requested format
 
               return (
                 <a 
-                  key={contest.id} 
-                  href={`https://codeforces.com/contests/${contest.id}`}
+                  key={contest.id || idx} 
+                  href={contest.url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-indigo-100 transition-all flex flex-col justify-between min-h-[160px]"
@@ -141,11 +141,13 @@ export default function ContestsHub() {
                   <div>
                     <div className="flex items-center gap-2 mb-2">
                        <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md ${
-                         contest.type === 'CF' ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'
+                         contest.platform === 'Codeforces' ? 'bg-red-50 text-red-600' : 
+                         contest.platform === 'LeetCode' ? 'bg-amber-50 text-amber-600' : 
+                         'bg-emerald-50 text-emerald-600'
                        }`}>
-                         {contest.type}
+                         {contest.platform}
                        </span>
-                       <span className="text-[10px] font-bold text-slate-400">Codeforces</span>
+                       <span className="text-[10px] font-bold text-slate-400">Global API</span>
                     </div>
                     <h4 className="text-sm font-bold text-slate-800 line-clamp-2 leading-snug group-hover:text-indigo-600 transition-colors">
                       {contest.name}
@@ -160,7 +162,7 @@ export default function ContestsHub() {
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
-                       <span className="text-[10px] text-slate-400">Duration: {Math.floor(contest.durationSeconds / 3600)}h</span>
+                       <span className="text-[10px] text-slate-400">Duration: {contest.duration}</span>
                        <ExternalLink className="w-3 h-3 text-slate-300 group-hover:text-indigo-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                     </div>
                   </div>

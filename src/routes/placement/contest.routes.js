@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { getContests, addContest, getContestById, addContestDiscussion, deleteContest } = require("../../controllers/placement/contest.controller");
+const { getUpcomingContests } = require("../../controllers/contest.controller");
 const { protect } = require("../../middleware/auth.middleware");
 const { attachPlacementRole } = require("../../middleware/placement.middleware");
 
@@ -10,6 +11,7 @@ router.use(attachPlacementRole);
 
 // Routes
 router.get("/", getContests);
+router.get("/upcoming", getUpcomingContests);
 router.post("/", addContest);
 
 router.get("/:id", getContestById);
