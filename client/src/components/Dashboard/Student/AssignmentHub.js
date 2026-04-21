@@ -1,9 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Upload, Clock, CheckCircle2, Bookmark, Calendar, Loader2 } from "lucide-react";
+import { Upload, Clock, CheckCircle2, Bookmark, Calendar, Loader2, Lock } from "lucide-react";
 import UploadModal from "./UploadModal";
 import { assignmentsAPI } from "@/lib/api";
+
+const isPastDue = (dueDateStr) => dueDateStr && new Date() > new Date(dueDateStr);
+const formatDue = (dueDateStr) => {
+  if (!dueDateStr) return null;
+  return new Date(dueDateStr).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
+};
 
 export default function AssignmentHub() {
   const [activeTab, setActiveTab] = useState("pending");
@@ -57,22 +63,6 @@ export default function AssignmentHub() {
   };
 
   const filteredAssignments = assignments.filter((a) => a.status === activeTab);
-
-  const getUrgencyColor = (dueDateStr) => {
-    if (!dueDateStr) return "bg-[#8b9d83]";
-    const hoursLeft = (new Date(dueDateStr).getTime() - Date.now()) / (1000 * 60 * 60);
-    if (hoursLeft < 24) return "bg-red-500";
-    if (hoursLeft < 72) return "bg-yellow-500";
-    return "bg-[#8b9d83]";
-  };
-
-  const getUrgencyText = (dueDateStr) => {
-    if (!dueDateStr) return "No due date";
-    const hoursLeft = (new Date(dueDateStr).getTime() - Date.now()) / (1000 * 60 * 60);
-    if (hoursLeft < 0) return "Overdue";
-    if (hoursLeft < 24) return `Due in ${Math.floor(hoursLeft)} hours`;
-    return `Due in ${Math.floor(hoursLeft / 24)} days`;
-  };
 
   return (
     <div className="bg-white/50 rounded-xl p-6 shadow-sm border border-[#e6e2d8]">
@@ -134,12 +124,24 @@ export default function AssignmentHub() {
                   )}
 
                   {activeTab === "pending" && (
-                    <div className="mt-4 flex items-center gap-2">
-                      <div className={`w-2.5 h-2.5 rounded-full ${getUrgencyColor(assignment.dueDate)} shadow-sm`} />
-                      <span className="text-sm text-[#4a4744] font-medium flex items-center gap-1.5">
-                        <Calendar className="w-4 h-4 text-[#736d65]" />
-                        {getUrgencyText(assignment.dueDate)}
-                      </span>
+                    <div className="mt-4 space-y-2">
+                      {assignment.dueDate ? (
+                        <div className={`flex items-center gap-2 text-sm font-medium rounded-lg px-3 py-1.5 w-fit ${
+                          isPastDue(assignment.dueDate)
+                            ? 'bg-red-50 text-red-700 border border-red-200'
+                            : 'bg-amber-50 text-amber-700 border border-amber-200'
+                        }`}>
+                          <Calendar className="w-4 h-4" />
+                          {isPastDue(assignment.dueDate)
+                            ? `Closed ${formatDue(assignment.dueDate)}`
+                            : `Due ${formatDue(assignment.dueDate)}`
+                          }
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 text-sm text-[#8b9d83]">
+                          <Calendar className="w-4 h-4" /> No due date
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -171,13 +173,20 @@ export default function AssignmentHub() {
                     </div>
 
                     {activeTab === "pending" && (
-                      <button
-                        onClick={() => handleUploadClick(assignment)}
-                        className="w-full bg-[#fcfbf9] hover:bg-[#fcfaf7] text-[#2d2a26] border border-[#e6e2d8] text-sm font-medium py-2 rounded-lg transition-colors flex items-center justify-center gap-2"
-                      >
-                        <Upload className="w-4 h-4" />
-                        Upload Submission
-                      </button>
+                      isPastDue(assignment.dueDate) ? (
+                        <div className="w-full bg-red-50 border border-red-200 text-red-700 text-sm font-semibold py-2 rounded-lg flex items-center justify-center gap-2 cursor-not-allowed">
+                          <Lock className="w-4 h-4" />
+                          Submission Closed
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleUploadClick(assignment)}
+                          className="w-full bg-[#fcfbf9] hover:bg-[#fcfaf7] text-[#2d2a26] border border-[#e6e2d8] text-sm font-medium py-2 rounded-lg transition-colors flex items-center justify-center gap-2"
+                        >
+                          <Upload className="w-4 h-4" />
+                          Upload Submission
+                        </button>
+                      )
                     )}
                   </div>
                 </div>

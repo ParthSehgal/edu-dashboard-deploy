@@ -26,6 +26,7 @@ export default function ProfessorCourseDetail({ params }) {
   const [desc, setDesc] = useState("");
   const [file, setFile] = useState(null);
   const [uploadType, setUploadType] = useState("assignment");
+  const [dueDate, setDueDate] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -110,12 +111,15 @@ export default function ProfessorCourseDetail({ params }) {
     formData.append("description", desc);
     formData.append("type", uploadType);
     formData.append("file", file);
+    if (uploadType === 'assignment' && dueDate) {
+      formData.append("dueDate", new Date(dueDate).toISOString());
+    }
 
     setSubmitting(true);
     try {
       await assignmentsAPI.createAssignment(courseCode, formData);
       alert(`${uploadType === 'material' ? 'Material' : 'Assignment'} Published Successfully!`);
-      setTitle(""); setDesc(""); setFile(null); setUploadType("assignment");
+      setTitle(""); setDesc(""); setFile(null); setUploadType("assignment"); setDueDate("");
       setShowAddForm(false);
       loadAssignments(courseCode);
     } catch (err) {
@@ -186,6 +190,18 @@ export default function ProfessorCourseDetail({ params }) {
                   </select>
                   <input type="text" placeholder="Title" className="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500" value={title} onChange={(e) => setTitle(e.target.value)} required />
                   <textarea placeholder="Description" className="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500" value={desc} onChange={(e) => setDesc(e.target.value)} required rows={3}></textarea>
+                  {uploadType === 'assignment' && (
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-500 mb-1.5">Due Date &amp; Time <span className="text-slate-400 font-normal">(optional)</span></label>
+                      <input
+                        type="datetime-local"
+                        className="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-sm"
+                        value={dueDate}
+                        onChange={(e) => setDueDate(e.target.value)}
+                        min={new Date().toISOString().slice(0, 16)}
+                      />
+                    </div>
+                  )}
                   <input type="file" className="w-full p-3 border rounded-xl bg-slate-50" onChange={(e) => setFile(e.target.files[0])} required />
                   <button type="submit" disabled={submitting} className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white w-full py-2.5 rounded-xl font-medium transition-colors">
                     {submitting ? 'Publishing...' : 'Publish'}
@@ -217,6 +233,16 @@ export default function ProfessorCourseDetail({ params }) {
                             <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ${isMaterial ? 'bg-orange-100 text-orange-700' : 'bg-indigo-100 text-indigo-700'}`}>
                               {isMaterial ? 'Material' : 'Assignment'}
                             </span>
+                            {!isMaterial && asmnt.dueDate && (
+                               (() => {
+                                 const isPast = new Date() > new Date(asmnt.dueDate);
+                                 return (
+                                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isPast ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+                                     {isPast ? 'CLOSED' : `Due ${new Date(asmnt.dueDate).toLocaleString()}`}
+                                   </span>
+                                 );
+                               })()
+                             )}
                           </h3>
                         </div>
                         <p className="text-sm text-slate-500 mt-1">{asmnt.description}</p>

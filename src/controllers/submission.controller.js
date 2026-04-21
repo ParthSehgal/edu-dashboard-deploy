@@ -37,8 +37,8 @@ exports.submitAssignment = async (req, res, next) => {
     );
 
     if (!isEnrolled) {
-      return res.status(403).json({ 
-        message: "Forbidden: You cannot submit assignments for a course you are not enrolled in." 
+      return res.status(403).json({
+        message: "Forbidden: You cannot submit assignments for a course you are not enrolled in."
       });
     }
 
@@ -76,7 +76,7 @@ exports.submitAssignment = async (req, res, next) => {
       await existingSubmission.save();
 
       return success(res, "Submission updated successfully", existingSubmission);
-      
+
     } else {
       // --- CREATE NEW SUBMISSION ---
       const newSubmission = await Submission.create({

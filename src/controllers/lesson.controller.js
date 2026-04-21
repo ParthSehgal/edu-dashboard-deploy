@@ -7,7 +7,7 @@ exports.createLesson = async (req, res, next) => {
   try {
     // 1. We get the custom courseId from the URL (e.g., /api/courses/CS1201/lessons)
     const customCourseId = req.params.courseId;
-    
+
     // 2. Find the course to make sure it exists and to get its real MongoDB _id
     const course = await Course.findOne({ courseId: customCourseId });
     if (!course) {

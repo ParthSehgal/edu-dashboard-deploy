@@ -18,8 +18,8 @@ const lessonSchema = new mongoose.Schema(
     },
     fileUrl: {
       // This will store the path to the file on your server (e.g., "uploads/169000-math.pdf")
-      type: String, 
-      required: true 
+      type: String,
+      required: true
     },
     course: {
       // We link this back to the standard MongoDB _id of the Course
