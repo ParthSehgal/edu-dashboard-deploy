@@ -283,15 +283,18 @@ exports.getMyAssignments = async (req, res, next) => {
 
     const courseIds = enrolledCourses.map(c => c._id);
     const courseMap = {};
-    enrolledCourses.forEach(c => { courseMap[c._id.toString()] = c.title; });
+    enrolledCourses.forEach(c => { 
+      courseMap[c._id.toString()] = { title: c.title, courseId: c.courseId }; 
+    });
 
     const lessons = await Lesson.find({ course: { $in: courseIds } })
       .sort({ createdAt: -1 });
 
-    // Attach course title to each lesson for display
+    // Attach course title and courseId to each lesson for display and submission routing
     const data = lessons.map(l => ({
       ...l.toObject(),
-      courseName: courseMap[l.course.toString()] || 'Unknown Course'
+      courseName: courseMap[l.course.toString()]?.title || 'Unknown Course',
+      courseId: courseMap[l.course.toString()]?.courseId || null
     }));
 
     return res.status(200).json({ success: true, count: data.length, data });

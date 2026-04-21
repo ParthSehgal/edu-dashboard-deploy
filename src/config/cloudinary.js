@@ -9,9 +9,21 @@ cloudinary.config({
 
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
-  params: {
-    folder: 'edunexus_uploads',
-    resource_type: 'auto'
+  params: async (req, file) => {
+    const ext = file.originalname.split('.').pop().toLowerCase();
+    // Images/videos go as 'image', everything else as 'raw' so Cloudinary accepts it
+    const imageTypes = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+    const videoTypes = ['mp4', 'mov', 'avi', 'mkv'];
+    let resourceType = 'raw';
+    if (imageTypes.includes(ext)) resourceType = 'image';
+    else if (videoTypes.includes(ext)) resourceType = 'video';
+
+    return {
+      folder: 'edunexus_uploads',
+      resource_type: resourceType,
+      // Keep the original filename so it's identifiable in Cloudinary dashboard
+      public_id: `${Date.now()}-${file.originalname.replace(/\s+/g, '_')}`
+    };
   }
 });
 

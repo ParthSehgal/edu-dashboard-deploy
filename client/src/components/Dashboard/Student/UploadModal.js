@@ -1,36 +1,58 @@
 "use client";
 
 import { useState } from "react";
-import { UploadCloud, X } from "lucide-react";
+import { UploadCloud, X, FileArchive, FileText, FileCode } from "lucide-react";
+import { assignmentsAPI } from "@/lib/api";
 
 export default function UploadModal({ isOpen, onClose, assignment, onUpload }) {
   const [file, setFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState(null);
 
   if (!isOpen || !assignment) return null;
 
+  const ALLOWED_EXTENSIONS = ['.zip', '.pdf', '.doc', '.docx', '.rar', '.7z'];
+
+  const validateAndSetFile = (f) => {
+    if (!f) return;
+    const ext = '.' + f.name.split('.').pop().toLowerCase();
+    if (ALLOWED_EXTENSIONS.includes(ext)) {
+      setFile(f);
+      setError(null);
+    } else {
+      setError(`Invalid file type. Allowed: ${ALLOWED_EXTENSIONS.join(', ')}`);
+    }
+  };
+
   const handleDrop = (e) => {
     e.preventDefault();
-    const droppedFile = e.dataTransfer.files[0];
-    if (droppedFile && droppedFile.name.endsWith('.zip')) {
-      setFile(droppedFile);
-    } else {
-      alert("Please upload a .zip file");
-    }
+    validateAndSetFile(e.dataTransfer.files[0]);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!file) return;
     setIsUploading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setIsUploading(false);
+    setError(null);
+
+    try {
+      // Build a proper FormData to send the file  
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('assignmentTitle', assignment.title);
+
+      // Use the courseId stored on the assignment (set by AssignmentHub)
+      await assignmentsAPI.submitAssignment(assignment.courseId, formData);
+
       onUpload(assignment.id, file);
       onClose();
       setFile(null);
-    }, 1500);
+    } catch (err) {
+      console.error("Submission failed:", err);
+      setError(err?.response?.data?.message || "Upload failed. Please try again.");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -56,23 +78,31 @@ export default function UploadModal({ isOpen, onClose, assignment, onUpload }) {
             onDrop={handleDrop}
             onClick={() => document.getElementById('file-upload').click()}
           >
-            <UploadCloud className="w-10 h-10 text-[#a99c85] mb-3" />
             {file ? (
-              <p className="text-sm font-medium text-[#2d2a26]">{file.name}</p>
+              <div className="flex flex-col items-center text-center">
+                <FileArchive className="w-10 h-10 text-emerald-600 mb-3" />
+                <p className="text-sm font-medium text-[#2d2a26] truncate max-w-[220px]">{file.name}</p>
+                <p className="text-xs text-[#736d65] mt-1">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+              </div>
             ) : (
               <>
+                <UploadCloud className="w-10 h-10 text-[#a99c85] mb-3" />
                 <p className="text-sm font-medium text-[#2d2a26]">Click to upload or drag and drop</p>
-                <p className="text-xs text-[#736d65] mt-1">.zip files only</p>
+                <p className="text-xs text-[#736d65] mt-1">.zip, .pdf, .doc, .docx, .rar, .7z</p>
               </>
             )}
             <input 
               id="file-upload" 
               type="file" 
-              accept=".zip" 
+              accept=".zip,.pdf,.doc,.docx,.rar,.7z" 
               className="hidden" 
-              onChange={(e) => setFile(e.target.files[0])}
+              onChange={(e) => validateAndSetFile(e.target.files[0])}
             />
           </div>
+
+          {error && (
+            <p className="mt-3 text-sm text-red-600 font-medium bg-red-50 px-3 py-2 rounded-lg border border-red-100">{error}</p>
+          )}
 
           <div className="mt-6 flex justify-end gap-3">
             <button 

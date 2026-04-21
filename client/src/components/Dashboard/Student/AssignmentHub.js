@@ -19,6 +19,7 @@ export default function AssignmentHub() {
         // Map lessons from the API into the shape the UI expects
         const data = (res.data?.data || []).map((lesson) => ({
           id: lesson._id,
+          courseId: lesson.courseId, // needed by UploadModal for the submission API call
           courseName: lesson.courseName,
           title: lesson.title,
           description: lesson.description,

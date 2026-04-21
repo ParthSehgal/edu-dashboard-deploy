@@ -1,7 +1,24 @@
 const Submission = require("../models/submission.model");
 const Course = require("../models/course.model");
 const { success } = require("../utils/apiResponse");
-const fs = require("fs");
+const { cloudinary } = require("../config/cloudinary");
+
+// Helper to extract Cloudinary public_id from a secure_url
+function extractPublicId(url) {
+  try {
+    // e.g. https://res.cloudinary.com/<cloud>/raw/upload/v123/edunexus_uploads/myfile.zip
+    // We need everything from the folder onwards, without the file extension
+    const parts = url.split('/upload/');
+    if (parts.length < 2) return null;
+    // Remove versioning (v123/)
+    const withoutVersion = parts[1].replace(/^v\d+\//, '');
+    // Remove file extension
+    const publicId = withoutVersion.replace(/\.[^/.]+$/, '');
+    return publicId;
+  } catch {
+    return null;
+  }
+}
 
 exports.submitAssignment = async (req, res, next) => {
   try {
@@ -27,30 +44,35 @@ exports.submitAssignment = async (req, res, next) => {
 
     // 3. Ensure a file was uploaded
     if (!req.file) {
-      return res.status(400).json({ message: "Please upload your assignment file (.zip)" });
+      return res.status(400).json({ message: "Please upload your assignment file" });
     }
 
-    // 4. Check if a submission already exists for this exact assignment by this student
+    // 4. The file is already uploaded to Cloudinary by multer-storage-cloudinary.
+    //    req.file.path holds the secure_url.
+    const newFileUrl = req.file.path;
+
+    // 5. Check if a submission already exists for this exact assignment by this student
     let existingSubmission = await Submission.findOne({
       student: req.user.id,
       course: course._id,
-      assignmentTitle: assignmentTitle // We use the title as the unique identifier
+      assignmentTitle: assignmentTitle
     });
 
     if (existingSubmission) {
       // --- UPDATE EXISTING SUBMISSION ---
-      
-      // A. Delete the old file from the server's hard drive
-      fs.unlink(existingSubmission.fileUrl, (err) => {
-        if (err) {
-          console.error("Warning: Failed to delete old file:", err);
-        } else {
-          console.log("Old submission file deleted successfully.");
+      // A. Delete the OLD file from Cloudinary
+      const oldPublicId = extractPublicId(existingSubmission.fileUrl);
+      if (oldPublicId) {
+        try {
+          // Try raw first (for zip/docx/pdf), fallback to auto
+          await cloudinary.uploader.destroy(oldPublicId, { resource_type: 'raw' });
+        } catch (e) {
+          console.warn("Could not delete old Cloudinary file:", e.message);
         }
-      });
+      }
 
-      // B. Update the database record with the new file path
-      existingSubmission.fileUrl = req.file.path;
+      // B. Update the database record with the new Cloudinary URL
+      existingSubmission.fileUrl = newFileUrl;
       await existingSubmission.save();
 
       return success(res, "Submission updated successfully", existingSubmission);
@@ -59,7 +81,7 @@ exports.submitAssignment = async (req, res, next) => {
       // --- CREATE NEW SUBMISSION ---
       const newSubmission = await Submission.create({
         assignmentTitle: assignmentTitle,
-        fileUrl: req.file.path,
+        fileUrl: newFileUrl,        // Cloudinary secure_url
         student: req.user.id,
         course: course._id
       });
@@ -70,7 +92,8 @@ exports.submitAssignment = async (req, res, next) => {
     next(error);
   }
 };
-  // Get all submissions for a specific course (Professor Only)
+
+// Get all submissions for a specific course (Professor / TA Only)
 exports.getSubmissionsForCourse = async (req, res, next) => {
   try {
     const customCourseId = req.params.courseId;
@@ -91,7 +114,7 @@ exports.getSubmissionsForCourse = async (req, res, next) => {
 
     // 3. Fetch the submissions and populate the student details
     const submissions = await Submission.find({ course: course._id })
-      .populate("student", "name email collegeId") // Let the prof see WHO submitted it
+      .populate("student", "name email collegeId")
       .sort({ createdAt: -1 }); // Newest first
 
     res.status(200).json({
