@@ -46,7 +46,8 @@ export default function SchedulePage() {
       const fetchSchedule = async () => {
         try {
           const token = localStorage.getItem('token');
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/schedule?department=${user.department}`, {
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://edu-dashboard-deploy.onrender.com/api';
+          const res = await fetch(`${apiUrl}/schedule?department=${encodeURIComponent(user.department)}`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
           if (res.ok) {
