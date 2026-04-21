@@ -254,28 +254,19 @@ export default function ProfessorCourseDetail({ params }) {
                         )}
                         
                         {!isMaterial && (
-                          <div className="mt-4">
-                            <h4 className="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
-                              <CheckCircle className="w-4 h-4 text-emerald-500" /> Student Submissions ({itemSubmissions.length})
-                            </h4>
-                            {itemSubmissions.length === 0 ? (
-                              <p className="text-xs text-slate-400 italic">No submissions yet.</p>
-                            ) : (
-                              <div className="space-y-2">
-                                {itemSubmissions.map(sub => (
-                                  <div key={sub._id} className="bg-white border border-slate-200 rounded-lg p-3 flex justify-between items-center">
-                                    <div>
-                                      <p className="text-sm font-medium text-slate-800">{sub.student?.name} <span className="text-xs text-slate-500">({sub.student?.collegeId})</span></p>
-                                    </div>
-                                    {sub.fileUrl && (
-                                      <a href={sub.fileUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-600 font-semibold bg-indigo-50 px-2 py-1 round-md hover:bg-indigo-100 transition-colors rounded">Download</a>
-                                    )}
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        )}
+                           <div className="mt-4 flex items-center justify-between">
+                             <span className="text-xs font-medium text-slate-500">
+                               <CheckCircle className="w-3.5 h-3.5 text-emerald-500 inline mr-1" />
+                               {itemSubmissions.length} submission{itemSubmissions.length !== 1 ? "s" : ""}
+                             </span>
+                             <Link
+                               href={`/dashboard/professor/courses/${courseCode}/assignments/${encodeURIComponent(asmnt.title)}`}
+                               className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors"
+                             >
+                               <CheckCircle className="w-3.5 h-3.5" /> Open Assignment Dashboard
+                             </Link>
+                           </div>
+                         )}
                       </div>
                     );
                   })}

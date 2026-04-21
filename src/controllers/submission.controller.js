@@ -147,3 +147,45 @@ exports.getSubmissionsForCourse = async (req, res, next) => {
     next(error);
   }
 };
+
+// Evaluate a submission — TA or Professor
+// PATCH /api/courses/:courseId/submissions/:submissionId/evaluate
+exports.evaluateSubmission = async (req, res, next) => {
+  try {
+    const { courseId, submissionId } = req.params;
+    const { score, feedback } = req.body;
+
+    if (score === undefined || score === null) {
+      return res.status(400).json({ message: "Score is required." });
+    }
+    if (typeof score !== "number" || score < 0 || score > 100) {
+      return res.status(400).json({ message: "Score must be a number between 0 and 100." });
+    }
+
+    const course = await Course.findOne({ courseId });
+    if (!course) return res.status(404).json({ message: "Course not found." });
+
+    // Auth: only the course's professor or one of its TAs
+    const isProfessor = req.user.role === "professor" && course.instructor.toString() === req.user.id;
+    const isTA = req.user.role === "ta" && course.tas.map(id => id.toString()).includes(req.user.id);
+    if (!isProfessor && !isTA) {
+      return res.status(403).json({ message: "Forbidden: Only the course professor or a TA can evaluate submissions." });
+    }
+
+    const submission = await Submission.findById(submissionId);
+    if (!submission) return res.status(404).json({ message: "Submission not found." });
+
+    submission.evaluatedScore = score;
+    submission.feedback = feedback || "";
+    submission.evaluatedBy = req.user.id;
+    await submission.save();
+
+    const populated = await Submission.findById(submissionId)
+      .populate("student", "name email collegeId")
+      .populate("evaluatedBy", "name role");
+
+    return res.status(200).json({ success: true, message: "Submission evaluated.", data: populated });
+  } catch (error) {
+    next(error);
+  }
+};

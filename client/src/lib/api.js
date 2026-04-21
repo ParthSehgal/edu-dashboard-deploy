@@ -75,6 +75,9 @@ export const assignmentsAPI = {
   },
   getSubmissions: async (courseId) => {
     return api.get(`/courses/${courseId}/submissions`);
+  },
+  evaluateSubmission: async (courseId, submissionId, score, feedback) => {
+    return api.patch(`/courses/${courseId}/submissions/${submissionId}/evaluate`, { score, feedback });
   }
 };
 

@@ -27,6 +27,15 @@ const submissionSchema = new mongoose.Schema(
     evaluatedScore: {
       type: Number,
       default: null,
+    },
+    evaluatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null
+    },
+    feedback: {
+      type: String,
+      default: ""
     }
   },
   { timestamps: true }
