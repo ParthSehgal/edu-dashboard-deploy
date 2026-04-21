@@ -36,7 +36,8 @@ exports.uploadSchedule = async (req, res) => {
         const stream = cloudinary.uploader.upload_stream(
           {
             folder: 'edunexus_schedules',
-            resource_type: 'auto'
+            resource_type: 'raw',     // Must be raw for .xlsx files
+            public_id: req.file.originalname
           },
           (error, result) => {
             if (result) resolve(result);
