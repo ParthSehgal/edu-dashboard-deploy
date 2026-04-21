@@ -32,6 +32,10 @@ const lessonSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true
+    },
+    dueDate: {
+      type: Date,
+      default: null
     }
   },
   { timestamps: true }

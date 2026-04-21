@@ -51,7 +51,28 @@ exports.submitAssignment = async (req, res, next) => {
     //    req.file.path holds the secure_url.
     const newFileUrl = req.file.path;
 
-    // 5. Check if a submission already exists for this exact assignment by this student
+    // 5. Fetch the lesson to check dueDate
+    const Lesson = require("../models/lesson.model");
+    const lesson = await Lesson.findOne({ title: assignmentTitle, course: course._id });
+    
+    if (!lesson) {
+      // Cleanup the Cloudinary file since we're rejecting
+      const publicId = extractPublicId(newFileUrl);
+      if (publicId) await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' }).catch(() => {});
+      return res.status(404).json({ message: "Assignment not found." });
+    }
+
+    // 6. Enforce Due Date — reject late submissions
+    if (lesson.dueDate && new Date() > new Date(lesson.dueDate)) {
+      // Cleanup the Cloudinary file since we're rejecting
+      const publicId = extractPublicId(newFileUrl);
+      if (publicId) await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' }).catch(() => {});
+      return res.status(400).json({ 
+        message: "The due date for this assignment has passed. Late submissions are not accepted." 
+      });
+    }
+
+    // 7. Check if a submission already exists for this exact assignment by this student
     let existingSubmission = await Submission.findOne({
       student: req.user.id,
       course: course._id,

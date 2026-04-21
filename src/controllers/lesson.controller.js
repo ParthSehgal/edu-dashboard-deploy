@@ -31,7 +31,8 @@ exports.createLesson = async (req, res, next) => {
       type: req.body.type || 'assignment',
       fileUrl: req.file.path, // Multer gives us the path here!
       course: course._id,     // Link to the course's MongoDB _id
-      instructor: req.user.id // Link to the logged-in professor
+      instructor: req.user.id, // Link to the logged-in professor
+      dueDate: req.body.dueDate ? new Date(req.body.dueDate) : null
     });
 
     return success(res, "Lesson created and file uploaded successfully", lesson);
