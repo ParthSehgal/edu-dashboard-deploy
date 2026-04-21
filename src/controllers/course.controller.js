@@ -290,12 +290,32 @@ exports.getMyAssignments = async (req, res, next) => {
     const lessons = await Lesson.find({ course: { $in: courseIds } })
       .sort({ createdAt: -1 });
 
+    const mySubmissions = await Submission.find({ student: req.user.id });
+    const submissionMap = {};
+    mySubmissions.forEach(sub => {
+      // Key format: courseId_assignmentTitle to match lesson.course and lesson.title
+      submissionMap[`${sub.course.toString()}_${sub.assignmentTitle}`] = {
+        submittedAt: sub.createdAt,
+        score: sub.evaluatedScore
+      };
+    });
+
     // Attach course title and courseId to each lesson for display and submission routing
-    const data = lessons.map(l => ({
-      ...l.toObject(),
-      courseName: courseMap[l.course.toString()]?.title || 'Unknown Course',
-      courseId: courseMap[l.course.toString()]?.courseId || null
-    }));
+    const data = lessons.map(l => {
+      const subInfo = submissionMap[`${l.course.toString()}_${l.title}`];
+      let status = "pending";
+      if (subInfo) {
+        status = subInfo.score !== null && subInfo.score !== undefined ? "evaluated" : "submitted";
+      }
+      return {
+        ...l.toObject(),
+        courseName: courseMap[l.course.toString()]?.title || 'Unknown Course',
+        courseId: courseMap[l.course.toString()]?.courseId || null,
+        status: status,
+        submittedAt: subInfo ? subInfo.submittedAt : null,
+        score: subInfo ? subInfo.score : null
+      };
+    });
 
     return res.status(200).json({ success: true, count: data.length, data });
   } catch (error) {

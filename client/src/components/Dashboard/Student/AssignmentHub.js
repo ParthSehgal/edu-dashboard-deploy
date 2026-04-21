@@ -25,9 +25,9 @@ export default function AssignmentHub() {
           description: lesson.description,
           fileUrl: lesson.fileUrl,
           dueDate: lesson.dueDate || null,
-          submittedAt: null,
-          score: null,
-          status: "pending", // all fetched lessons are pending (no submission tracking here yet)
+          submittedAt: lesson.submittedAt || null,
+          score: lesson.score !== undefined ? lesson.score : null,
+          status: lesson.status || "pending",
         }));
         setAssignments(data);
       } catch (err) {
