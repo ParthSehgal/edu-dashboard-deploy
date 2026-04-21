@@ -123,30 +123,27 @@ export default function AssignmentHub() {
                     <p className="text-xs text-[#736d65] line-clamp-2 mb-2">{assignment.description}</p>
                   )}
 
-                  {activeTab === "pending" && (
-                    <div className="mt-4 space-y-2">
-                      {assignment.dueDate ? (
-                        <div className={`flex items-center gap-2 text-sm font-medium rounded-lg px-3 py-1.5 w-fit ${
-                          isPastDue(assignment.dueDate)
-                            ? 'bg-red-50 text-red-700 border border-red-200'
-                            : 'bg-amber-50 text-amber-700 border border-amber-200'
-                        }`}>
-                          <Calendar className="w-4 h-4" />
-                          {isPastDue(assignment.dueDate)
-                            ? `Closed ${formatDue(assignment.dueDate)}`
-                            : `Due ${formatDue(assignment.dueDate)}`
-                          }
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2 text-sm text-[#8b9d83]">
-                          <Calendar className="w-4 h-4" /> No due date
-                        </div>
-                      )}
+                  {/* Due Date — always visible on every tab */}
+                  {assignment.dueDate ? (
+                    <div className={`mt-3 flex items-center gap-2 text-xs font-semibold rounded-lg px-3 py-1.5 w-fit border ${
+                      isPastDue(assignment.dueDate)
+                        ? 'bg-red-50 text-red-700 border-red-200'
+                        : 'bg-amber-50 text-amber-800 border-amber-200'
+                    }`}>
+                      <Calendar className="w-3.5 h-3.5" />
+                      {isPastDue(assignment.dueDate)
+                        ? `Closed · ${formatDue(assignment.dueDate)}`
+                        : `Due · ${formatDue(assignment.dueDate)}`
+                      }
+                    </div>
+                  ) : (
+                    <div className="mt-3 flex items-center gap-2 text-xs text-[#a99c85]">
+                      <Calendar className="w-3.5 h-3.5" /> No due date
                     </div>
                   )}
 
                   {activeTab === "submitted" && (
-                    <div className="mt-4 flex items-center gap-2">
+                    <div className="mt-2 flex items-center gap-2">
                       <Clock className="w-4 h-4 text-[#736d65]" />
                       <span className="text-sm text-[#4a4744]">
                         Submitted: {assignment.submittedAt ? new Date(assignment.submittedAt).toLocaleDateString() : "—"}
@@ -155,7 +152,7 @@ export default function AssignmentHub() {
                   )}
 
                   {activeTab === "evaluated" && (
-                    <div className="mt-4 flex items-center gap-2">
+                    <div className="mt-2 flex items-center gap-2">
                       <CheckCircle2 className="w-4 h-4 text-[#8b9d83]" />
                       <span className="text-sm font-bold text-[#8b9d83]">
                         Score: {assignment.score ?? "—"}/100
