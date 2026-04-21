@@ -1,5 +1,7 @@
 const Schedule = require('../models/schedule.model');
 const xlsx = require('xlsx');
+const { cloudinary } = require('../config/cloudinary');
+const { Readable } = require('stream');
 
 exports.uploadSchedule = async (req, res) => {
   try {
@@ -24,8 +26,35 @@ exports.uploadSchedule = async (req, res) => {
       parsedData = xlsx.utils.sheet_to_json(worksheet, { header: 1 });
     } else if (req.file.originalname.match(/\.(pdf)$/i)) {
       fileType = 'pdf';
-      // Handle PDF uploads separately if needed (e.g. upload to S3)
-      // For this demo, we'll just acknowledge the upload.
+      // PDF is handled by the cloud upload below
+    }
+
+    // Upload buffer to Cloudinary
+    let fileUrl = '';
+    try {
+      const uploadResult = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          {
+            folder: 'edunexus_schedules',
+            resource_type: 'auto'
+          },
+          (error, result) => {
+            if (result) resolve(result);
+            else reject(error);
+          }
+        );
+        const readableStream = new Readable({
+          read() {
+            this.push(req.file.buffer);
+            this.push(null);
+          }
+        });
+        readableStream.pipe(stream);
+      });
+      fileUrl = uploadResult.secure_url;
+    } catch (uploadErr) {
+      console.error('Cloudinary upload error:', uploadErr);
+      return res.status(500).json({ message: 'Error uploading to cloud' });
     }
 
     // Upsert the schedule for the department
@@ -33,12 +62,12 @@ exports.uploadSchedule = async (req, res) => {
       { department },
       {
         department,
-        fileUrl: req.file.path,
+        fileUrl,
         fileType,
         uploadedBy: req.user.id,
         parsedData
       },
-      { new: true, upsert: true }
+      { new: true, upsert: true, runValidators: true }
     ).populate('uploadedBy', 'name');
 
     res.status(200).json({ message: 'Schedule uploaded successfully', schedule });
