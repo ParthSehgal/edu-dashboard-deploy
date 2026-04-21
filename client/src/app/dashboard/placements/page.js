@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/Layout/DashboardLayout";
 import { placementAPI, alumniAPI } from "@/lib/api";
-import { Search, Briefcase, Calendar, MapPin, Tag, Code, Trophy, Plus, ChevronRight, CheckCircle2, Activity } from "lucide-react";
+import { Search, Briefcase, Calendar, MapPin, Tag, Code, Trophy, Plus, ChevronRight, CheckCircle2, Activity, Mic2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -12,6 +12,7 @@ export default function PlacementsFeed() {
 
   const [posts, setPosts] = useState([]);
   const [techUpdates, setTechUpdates] = useState([]);
+  const [tedTalks, setTedTalks] = useState([]);
   const [pendingTalks, setPendingTalks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState("student");
@@ -42,9 +43,10 @@ export default function PlacementsFeed() {
       }
       setPosts(postsRes.data?.data || []);
 
-      // Filter out only tech updates from alumni 
-      const updates = (alumniRes.data?.data || []).filter(t => t.type === "techupdate");
-      setTechUpdates(updates);
+      // Split alumni posts into tech updates and TED talks
+      const allPosts = alumniRes.data?.data || [];
+      setTechUpdates(allPosts.filter(t => t.type === "techupdate"));
+      setTedTalks(allPosts.filter(t => t.type === "tedtalk"));
 
       // Fetch pending if TPC
       if (isTpc) {
@@ -160,7 +162,49 @@ export default function PlacementsFeed() {
         </div>
       </div>
 
+      {/* TED TALKS FROM ALUMNI */}
+      <div className="mb-14">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
+            <Mic2 className="w-6 h-6 text-purple-500" /> TED Talks <span className="text-slate-400 text-sm font-medium">from Alumni</span>
+          </h2>
+          <Link href="/dashboard/placements/ted-talks" className="text-xs font-bold text-purple-600 hover:text-purple-700 bg-purple-50 px-3 py-1.5 rounded-lg border border-purple-100">
+            View All Talks
+          </Link>
+        </div>
 
+        {tedTalks.length === 0 ? (
+          <div className="bg-white p-8 rounded-3xl border border-dashed border-slate-200 text-center">
+            <p className="text-slate-400 text-sm font-medium">No TED talks posted yet.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {tedTalks.slice(0, 3).map((talk) => (
+              <div key={talk._id} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all border-l-4 border-l-purple-400">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 bg-purple-50 text-purple-700 rounded-md border border-purple-100">TED Talk</span>
+                  <span className="text-[10px] text-slate-400 font-bold">{new Date(talk.createdAt).toLocaleDateString()}</span>
+                </div>
+                <h3 className="text-md font-bold text-slate-800 mb-2 line-clamp-1">{talk.title}</h3>
+                <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed mb-4">{talk.body}</p>
+                {talk.dateTime && (
+                  <div className="flex items-center gap-1.5 text-xs text-purple-600 font-semibold bg-purple-50 px-3 py-1.5 rounded-lg border border-purple-100 mb-4 w-fit">
+                    <Calendar className="w-3 h-3" /> {new Date(talk.dateTime).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
+                  </div>
+                )}
+                <div className="flex items-center gap-2 mt-auto pt-4 border-t border-slate-50">
+                  <div className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center text-[10px] font-bold text-purple-600">
+                    {talk.author?.name?.charAt(0)}
+                  </div>
+                  <span className="text-[10px] font-bold text-slate-500">{talk.author?.name} · Alumni</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* TECH UPDATES FROM ALUMNI */}
       <div className="mb-14">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
