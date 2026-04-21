@@ -176,13 +176,19 @@ export default function ContestsHub() {
       {loading ? (
         <div className="flex justify-center my-32"><div className="w-10 h-10 rounded-full border-4 border-amber-100 border-t-amber-500 animate-spin"></div></div>
       ) : contests.length === 0 ? (
-        <div className="bg-white py-20 rounded-3xl border border-slate-100 shadow-sm text-center">
-           <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Trophy className="w-10 h-10 text-slate-300" />
-           </div>
-           <h3 className="text-2xl font-bold text-slate-800 mb-2">No upcoming contests</h3>
-           <p className="text-slate-500 max-w-sm mx-auto">There are currently no active coding contests on the radar. Check back later!</p>
-        </div>
+        upcomingCodeforces.length > 0 ? (
+          <div className="bg-white py-8 rounded-3xl border border-dashed border-slate-200 text-center mb-10">
+             <p className="text-slate-400 max-w-sm mx-auto font-medium text-sm">No internal college contests have been posted by the TPC yet.</p>
+          </div>
+        ) : (
+          <div className="bg-white py-20 rounded-3xl border border-slate-100 shadow-sm text-center">
+             <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Trophy className="w-10 h-10 text-slate-300" />
+             </div>
+             <h3 className="text-2xl font-bold text-slate-800 mb-2">No upcoming contests</h3>
+             <p className="text-slate-500 max-w-sm mx-auto">There are currently no active coding contests on the radar. Check back later!</p>
+          </div>
+        )
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {contests.map((c) => {
