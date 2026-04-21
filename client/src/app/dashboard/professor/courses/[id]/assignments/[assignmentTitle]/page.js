@@ -187,7 +187,7 @@ export default function AssignmentDashboard({ params }) {
   useEffect(() => {
     const run = async () => {
       const p = await Promise.resolve(params);
-      const cid = p.courseId;
+      const cid = p.id;
       const title = decodeURIComponent(p.assignmentTitle);
       setCourseCode(cid);
       setAssignmentTitle(title);
