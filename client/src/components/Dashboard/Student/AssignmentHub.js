@@ -25,7 +25,7 @@ export default function AssignmentHub() {
         // Map lessons from the API into the shape the UI expects
         const data = (res.data?.data || []).map((lesson) => ({
           id: lesson._id,
-          courseId: lesson.courseId, // needed by UploadModal for the submission API call
+          courseId: lesson.courseId,
           courseName: lesson.courseName,
           title: lesson.title,
           description: lesson.description,
@@ -65,21 +65,29 @@ export default function AssignmentHub() {
   const filteredAssignments = assignments.filter((a) => a.status === activeTab);
 
   return (
-    <div className="bg-white/50 rounded-xl p-6 shadow-sm border border-[#e6e2d8]">
-      <div className="flex justify-between items-end mb-6 border-b border-[#e6e2d8] pb-4">
-        <h2 className="text-xl font-serif font-bold text-[#2d2a26] uppercase tracking-widest">
-          Assignments Hub
-        </h2>
+    <div className="bg-white p-10 rounded-[40px] shadow-sm border border-slate-100 relative overflow-hidden">
+      <div className="absolute left-0 top-0 w-32 h-32 bg-indigo-50 rounded-full -ml-10 -mt-10 blur-3xl opacity-50" />
+      
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6 relative z-10">
+        <div>
+          <h2 className="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-3">
+            <div className="w-10 h-10 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-100">
+              <Clock className="w-5 h-5" />
+            </div>
+            Assignments Hub
+          </h2>
+          <p className="text-slate-500 text-sm mt-1 font-medium ml-13">Track and submit your course assignments.</p>
+        </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
           {["pending", "submitted", "evaluated"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-1.5 text-sm font-medium rounded-full transition-all capitalize ${
+              className={`px-5 py-2.5 text-sm font-bold rounded-xl transition-all capitalize ${
                 activeTab === tab
-                  ? "bg-[#2d2a26] text-white shadow-md"
-                  : "bg-white text-[#736d65] hover:bg-[#fcfaf7] border border-[#e6e2d8]"
+                  ? "bg-white text-indigo-600 shadow-sm border border-indigo-50"
+                  : "text-slate-500 hover:text-slate-700 hover:bg-white/50"
               }`}
             >
               {tab}
@@ -89,103 +97,102 @@ export default function AssignmentHub() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center items-center py-16 text-[#736d65]">
-          <Loader2 className="w-6 h-6 animate-spin mr-2" />
-          <span className="text-sm font-medium">Loading assignments…</span>
+        <div className="flex justify-center items-center py-24 text-slate-400">
+          <Loader2 className="w-8 h-8 animate-spin mr-3 text-indigo-600" />
+          <span className="text-md font-bold">Fetching assignments…</span>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
           {filteredAssignments.length === 0 ? (
-            <div className="col-span-full py-12 text-center text-[#736d65] font-serif italic">
-              {activeTab === "pending"
-                ? "No pending assignments from your enrolled courses."
-                : `No ${activeTab} assignments found.`}
+            <div className="col-span-full py-20 text-center bg-slate-50/50 rounded-3xl border border-dashed border-slate-200">
+              <Bookmark className="w-12 h-12 text-slate-200 mx-auto mb-4" />
+              <p className="text-slate-400 text-lg font-bold">
+                {activeTab === "pending"
+                  ? "All caught up! No pending assignments."
+                  : `No ${activeTab} assignments to show.`}
+              </p>
             </div>
           ) : (
             filteredAssignments.map((assignment) => (
               <div
                 key={assignment.id}
-                className="bg-white rounded-xl border border-[#e6e2d8] shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col h-full group"
+                className="bg-white rounded-[32px] border border-slate-100 shadow-sm hover:shadow-xl transition-all overflow-hidden flex flex-col h-full group border-b-4 border-b-transparent hover:border-b-indigo-500"
               >
-                <div className="h-12 bg-[#fcfbf9] border-b border-[#e6e2d8] w-full flex items-center px-4 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-[#a99c85]/10 rounded-full blur-2xl -mt-10 -mr-10" />
-                  <div className="flex items-center gap-2 text-xs font-semibold text-[#736d65] tracking-wide uppercase">
-                    <Bookmark className="w-3.5 h-3.5" />
-                    {assignment.courseName}
+                <div className="p-8 flex-grow flex flex-col">
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 bg-indigo-50 text-indigo-600 rounded-lg">
+                      {assignment.courseId}
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-bold truncate">
+                      {assignment.courseName}
+                    </span>
                   </div>
-                </div>
 
-                <div className="p-5 flex-grow flex flex-col">
-                  <h3 className="font-serif font-bold text-lg text-[#2d2a26] leading-tight mb-2 group-hover:text-[#8b9d83] transition-colors">
+                  <h3 className="font-bold text-xl text-slate-800 leading-tight mb-3 group-hover:text-indigo-600 transition-colors">
                     {assignment.title}
                   </h3>
                   {assignment.description && (
-                    <p className="text-xs text-[#736d65] line-clamp-2 mb-2">{assignment.description}</p>
+                    <p className="text-sm text-slate-500 line-clamp-2 mb-4 font-medium leading-relaxed">{assignment.description}</p>
                   )}
 
-                  {/* Due Date — always visible on every tab */}
-                  {assignment.dueDate ? (
-                    <div className={`mt-3 flex items-center gap-2 text-xs font-semibold rounded-lg px-3 py-1.5 w-fit border ${
-                      isPastDue(assignment.dueDate)
-                        ? 'bg-red-50 text-red-700 border-red-200'
-                        : 'bg-amber-50 text-amber-800 border-amber-200'
-                    }`}>
-                      <Calendar className="w-3.5 h-3.5" />
-                      {isPastDue(assignment.dueDate)
-                        ? `Closed · ${formatDue(assignment.dueDate)}`
-                        : `Due · ${formatDue(assignment.dueDate)}`
-                      }
-                    </div>
-                  ) : (
-                    <div className="mt-3 flex items-center gap-2 text-xs text-[#a99c85]">
-                      <Calendar className="w-3.5 h-3.5" /> No due date
-                    </div>
-                  )}
+                  <div className="mt-auto">
+                    {assignment.dueDate ? (
+                      <div className={`flex items-center gap-2 text-xs font-bold rounded-xl px-4 py-2 w-fit border ${
+                        isPastDue(assignment.dueDate)
+                          ? 'bg-rose-50 text-rose-600 border-rose-100'
+                          : 'bg-indigo-50 text-indigo-700 border-indigo-100'
+                      }`}>
+                        <Calendar className="w-3.5 h-3.5" />
+                        {isPastDue(assignment.dueDate)
+                          ? `Deadline Passed`
+                          : `Due ${formatDue(assignment.dueDate)}`
+                        }
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 text-xs text-slate-400 font-bold">
+                        <Calendar className="w-3.5 h-3.5" /> No Deadline
+                      </div>
+                    )}
 
-                  {activeTab === "submitted" && (
-                    <div className="mt-2 flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-[#736d65]" />
-                      <span className="text-sm text-[#4a4744]">
-                        Submitted: {assignment.submittedAt ? new Date(assignment.submittedAt).toLocaleDateString() : "—"}
-                      </span>
-                    </div>
-                  )}
+                    {activeTab === "submitted" && (
+                      <div className="mt-4 flex items-center gap-2 text-xs font-bold text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg w-fit">
+                        <Clock className="w-3.5 h-3.5" />
+                        Submitted {new Date(assignment.submittedAt).toLocaleDateString()}
+                      </div>
+                    )}
 
-                  {activeTab === "evaluated" && (
-                    <div className="mt-2 flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-[#8b9d83]" />
-                      <span className="text-sm font-bold text-[#8b9d83]">
+                    {activeTab === "evaluated" && (
+                      <div className="mt-4 flex items-center gap-2 text-sm font-black text-emerald-600 bg-emerald-50 px-4 py-2 rounded-xl border border-emerald-100 w-fit">
+                        <CheckCircle2 className="w-4 h-4" />
                         Score: {assignment.score ?? "—"}/100
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="mt-auto pt-6 w-full">
-                    <div className="w-full h-1 bg-[#f5f3ef] rounded-full mb-4 overflow-hidden">
-                      <div
-                        className={`h-full ${
-                          activeTab === "pending" ? "bg-[#e6e2d8] w-1/4" : "bg-[#8b9d83] w-full"
-                        }`}
-                      />
-                    </div>
-
-                    {activeTab === "pending" && (
-                      isPastDue(assignment.dueDate) ? (
-                        <div className="w-full bg-red-50 border border-red-200 text-red-700 text-sm font-semibold py-2 rounded-lg flex items-center justify-center gap-2 cursor-not-allowed">
-                          <Lock className="w-4 h-4" />
-                          Submission Closed
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => handleUploadClick(assignment)}
-                          className="w-full bg-[#fcfbf9] hover:bg-[#fcfaf7] text-[#2d2a26] border border-[#e6e2d8] text-sm font-medium py-2 rounded-lg transition-colors flex items-center justify-center gap-2"
-                        >
-                          <Upload className="w-4 h-4" />
-                          Upload Submission
-                        </button>
-                      )
+                      </div>
                     )}
                   </div>
+                </div>
+
+                <div className="px-8 pb-8">
+                  {activeTab === "pending" && (
+                    isPastDue(assignment.dueDate) ? (
+                      <div className="w-full bg-slate-50 text-slate-400 text-xs font-black py-3 rounded-2xl flex items-center justify-center gap-2 grayscale border border-slate-100">
+                        <Lock className="w-4 h-4" />
+                        SUBMISSION CLOSED
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => handleUploadClick(assignment)}
+                        className="w-full bg-slate-900 hover:bg-indigo-600 text-white text-sm font-black py-4 rounded-2xl transition-all flex items-center justify-center gap-3 shadow-lg shadow-slate-200 hover:shadow-indigo-200 active:scale-95"
+                      >
+                        <Upload className="w-4 h-4" />
+                        UPLOAD WORK
+                      </button>
+                    )
+                  )}
+                  
+                  {activeTab !== "pending" && (
+                     <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-indigo-500 w-full" />
+                     </div>
+                  )}
                 </div>
               </div>
             ))

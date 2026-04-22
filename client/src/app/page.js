@@ -186,7 +186,7 @@ export default function LoginPage() {
           <RectFace color="#6366f1" width={110} height={310} delay={0} zIndex={10} focusState={focusState} collegeId={collegeId} />
           <RectFace color="#ec4899" width={90} height={210} delay={40} zIndex={8} focusState={focusState} collegeId={collegeId} />
           <RectFace color="#10b981" width={80} height={180} delay={80} zIndex={12} focusState={focusState} collegeId={collegeId} />
-          <RectFace color="#f59e0b" width={95} height={250} delay={120} zIndex={9} focusState={focusState} collegeId={collegeId} />
+          <RectFace color="#06b6d4" width={95} height={250} delay={120} zIndex={9} focusState={focusState} collegeId={collegeId} />
           <RectFace color="#8b5cf6" width={120} height={350} delay={160} zIndex={15} focusState={focusState} collegeId={collegeId} />
           <RectFace color="#06b6d4" width={100} height={290} delay={200} zIndex={7} focusState={focusState} collegeId={collegeId} />
         </div>

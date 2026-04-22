@@ -19,26 +19,30 @@ export default function StudentDashboard() {
 
   return (
     <DashboardLayout requiredRole="student">
-      <div className="max-w-[1600px] mx-auto min-h-[calc(100vh-4rem)] bg-[#fcfaf7]">
+      <div className="max-w-[1600px] mx-auto min-h-[calc(100vh-4rem)] bg-slate-50/50">
         
         {/* Header Section */}
-        <div className="mb-8 p-6 bg-white rounded-xl border border-[#e6e2d8] shadow-sm flex flex-col md:flex-row justify-between items-center bg-[url('https://www.transparenttextures.com/patterns/cream-paper.png')]">
-          <div>
-            <h1 className="text-3xl font-serif font-bold text-[#2d2a26] leading-tight">
-              Welcome back, <span className="text-[#a99c85]">{user.name}</span>.
+        <div className="mb-10 p-10 bg-white rounded-[40px] border border-slate-100 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center relative overflow-hidden">
+          <div className="absolute right-0 top-0 w-64 h-64 bg-indigo-50 rounded-full -mr-20 -mt-20 blur-3xl opacity-50"></div>
+          
+          <div className="relative z-10">
+            <h1 className="text-4xl font-black text-slate-800 tracking-tight leading-tight">
+              Welcome back, <span className="text-indigo-600">{user.name}</span>.
             </h1>
-            <p className="text-[#736d65] mt-2 font-medium tracking-wide">
+            <p className="text-slate-500 mt-2 font-medium flex items-center gap-2">
+              <span className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>
               {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
             </p>
           </div>
-          <div className="mt-4 md:mt-0 px-4 py-2 bg-[#fcfaf7] border border-[#e6e2d8] rounded-lg">
-            <p className="text-xs font-bold text-[#736d65] uppercase tracking-widest text-center">Department</p>
-            <p className="text-[#2d2a26] font-serif font-semibold mt-1">{user.department}</p>
+          
+          <div className="mt-6 md:mt-0 px-6 py-4 bg-slate-900 rounded-2xl shadow-xl shadow-slate-200 relative z-10 border border-slate-800">
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Department</p>
+            <p className="text-white font-bold text-lg mt-1">{user.department}</p>
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="w-full space-y-8">
+        <div className="w-full space-y-12">
           <AssignmentHub />
         </div>
       </div>
