@@ -151,7 +151,7 @@ exports.getMyGrades = async (req, res, next) => {
   }
 };
 
-// NEW: Assign Official Letter Grade (Professor ONLY)
+// Assign Official Letter Grade (Professor ONLY)
 exports.updateFinalGrade = async (req, res, next) => {
   try {
     const { courseId, studentId } = req.params;
