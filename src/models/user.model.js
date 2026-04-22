@@ -152,15 +152,12 @@ const userSchema = new mongoose.Schema(
 );
 
 // ── ROLL NUMBER VALIDATION (students & TAs only) ─────────────────
-// B.Tech: 3rd/4th digits = "01", max 4 years
-// M.Tech: 3rd/4th digits = "11", max 2 years
-// Mongoose 9 requires async pre hooks (no next() callback)
 userSchema.pre("validate", async function () {
   const studentRoles = ["student", "ta"];
   if (!studentRoles.includes(this.role)) return;
 
   const id = this.collegeId;
-  if (!id || id.length < 4) return; // let other validators catch missing IDs
+  if (!id || id.length < 4) return; 
 
   const yy = parseInt(id.substring(0, 2), 10);           // Joining year (e.g. 24)
   const programCode = id.substring(2, 4);                 // e.g. "01" or "11"
@@ -171,10 +168,10 @@ userSchema.pre("validate", async function () {
   } else if (programCode === "11") {
     maxYears = 2; // M.Tech
   } else {
-    return; // Unrecognised program code — skip duration check
+    return; 
   }
 
-  const yearOfStudy = CURRENT_YEAR_PREFIX - yy; // e.g. 26 - 24 = 2
+  const yearOfStudy = CURRENT_YEAR_PREFIX - yy; 
 
   if (yearOfStudy < 1 || yearOfStudy > maxYears) {
     const programName = maxYears === 4 ? "B.Tech" : "M.Tech";
