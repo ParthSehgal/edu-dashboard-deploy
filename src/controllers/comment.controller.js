@@ -1,7 +1,6 @@
 const Comment = require("../models/comment.model");
 const { success } = require("../utils/apiResponse");
 
-// 1. Create a comment
 exports.createComment = async (req, res, next) => {
   try {
     const { postId } = req.params;

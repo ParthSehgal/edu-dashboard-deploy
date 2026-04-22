@@ -20,7 +20,6 @@ exports.getCourses = async (req, res, next) => {
     const filter = {};
 
     if (req.user && req.user.role === 'student') {
-      // Filter by the student's department
       const User = require("../models/user.model");
       const student = await User.findById(req.user.id).select('department collegeId');
 
@@ -28,8 +27,6 @@ exports.getCourses = async (req, res, next) => {
         filter.department = student.department;
       }
 
-      // Filter by year: the 3rd character of the courseId is the target year digit
-      // e.g. AI2101 → year digit = '2', so only show to 2nd-year students
       const year = getYearOfStudy(student?.collegeId);
       if (year && year >= 1 && year <= 4) {
         // Use regex to match courses whose 3rd character equals the student's year
@@ -53,7 +50,6 @@ exports.getCourses = async (req, res, next) => {
   }
 };
 
-// 2. Create Course (Prof Only)
 exports.createCourse = async (req, res, next) => {
   try {
     const { courseId, title, description, credits } = req.body;
@@ -152,7 +148,6 @@ exports.enrollInCourse = async (req, res, next) => {
   }
 };
 
-// 5. Update Course (Owner Only)
 exports.updateCourse = async (req, res, next) => {
   try {
     const customCourseId = req.params.id;
@@ -171,7 +166,6 @@ exports.updateCourse = async (req, res, next) => {
       });
     }
 
-    // REFACTORED: Use findOneAndUpdate instead of findByIdAndUpdate
     course = await Course.findOneAndUpdate(
       { courseId: customCourseId },
       req.body,
@@ -377,4 +371,4 @@ exports.reviewTaRequest = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-};
+};

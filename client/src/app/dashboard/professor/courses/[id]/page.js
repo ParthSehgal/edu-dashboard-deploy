@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/Layout/DashboardLayout";
 import { coursesAPI, assignmentsAPI, userAPI } from "@/lib/api";
-import { Search, Users, Calendar, ArrowLeft, FilePlus, CheckCircle } from "lucide-react";
+import { Search, Users, Calendar, ArrowLeft, FilePlus, CheckCircle, Pencil, Trash2, X, AlertTriangle } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import GradesManager from "@/components/Dashboard/Professor/GradesManager";
 
 export default function ProfessorCourseDetail({ params }) {
+  const router = useRouter();
   const [course, setCourse] = useState(null);
   const [courseCode, setCourseCode] = useState("");
   const [loading, setLoading] = useState(true);
@@ -28,6 +30,18 @@ export default function ProfessorCourseDetail({ params }) {
   const [uploadType, setUploadType] = useState("assignment");
   const [dueDate, setDueDate] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  // ── Edit course state ──
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editCredits, setEditCredits] = useState(3);
+  const [editSubmitting, setEditSubmitting] = useState(false);
+
+  // ── Delete course state ──
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const run = async () => {
@@ -150,6 +164,47 @@ export default function ProfessorCourseDetail({ params }) {
     }
   };
 
+  // ── Open edit modal pre-filled with current course data ──
+  const openEditModal = () => {
+    setEditTitle(course.title);
+    setEditDescription(course.description);
+    setEditCredits(course.credits ?? 3);
+    setShowEditModal(true);
+  };
+
+  const handleUpdateCourse = async (e) => {
+    e.preventDefault();
+    setEditSubmitting(true);
+    try {
+      await coursesAPI.updateCourse(courseCode, {
+        title: editTitle,
+        description: editDescription,
+        credits: Number(editCredits),
+      });
+      setShowEditModal(false);
+      fetchCourse(courseCode);
+    } catch (err) {
+      alert(err.response?.data?.message || err.message || "Failed to update course.");
+    } finally {
+      setEditSubmitting(false);
+    }
+  };
+
+  const handleDeleteCourse = async () => {
+    if (deleteConfirmText !== courseCode) {
+      alert(`Please type the course code "${courseCode}" to confirm deletion.`);
+      return;
+    }
+    setDeleting(true);
+    try {
+      await coursesAPI.deleteCourse(courseCode);
+      router.push("/dashboard/professor");
+    } catch (err) {
+      alert(err.response?.data?.message || err.message || "Failed to delete course.");
+      setDeleting(false);
+    }
+  };
+
   if (loading) return <DashboardLayout requiredRole="professor"><div className="flex justify-center mt-20"><div className="w-8 h-8 rounded-full border-4 border-indigo-200 border-t-indigo-600 animate-spin"></div></div></DashboardLayout>;
   if (!course) return <DashboardLayout requiredRole="professor"><div className="mt-20 text-center text-slate-500">Course not found.</div></DashboardLayout>;
 
@@ -159,20 +214,156 @@ export default function ProfessorCourseDetail({ params }) {
         <ArrowLeft className="w-4 h-4" /> Back to Dashboard
       </Link>
 
+      {/* ── Edit Course Modal ── */}
+      {showEditModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 relative">
+            <button
+              onClick={() => setShowEditModal(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h2 className="text-xl font-bold text-slate-800 mb-1">Edit Course</h2>
+            <p className="text-sm text-slate-400 mb-6">
+              Updating <span className="font-semibold text-indigo-600">{courseCode}</span>
+            </p>
+            <form onSubmit={handleUpdateCourse} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Course Title</label>
+                <input
+                  type="text"
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
+                <textarea
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
+                  rows={3}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Credits</label>
+                <input
+                  type="number"
+                  value={editCredits}
+                  onChange={(e) => setEditCredits(e.target.value)}
+                  className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
+                  min="0" max="20" step="0.5"
+                  required
+                />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="flex-1 border border-slate-200 text-slate-600 hover:bg-slate-50 py-2.5 rounded-xl font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={editSubmitting}
+                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white py-2.5 rounded-xl font-medium transition-colors"
+                >
+                  {editSubmitting ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Delete Confirmation Dialog ── */}
+      {showDeleteDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 relative">
+            <button
+              onClick={() => { setShowDeleteDialog(false); setDeleteConfirmText(""); }}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-red-600" />
+              </div>
+              <h2 className="text-xl font-bold text-slate-800">Delete Course</h2>
+            </div>
+            <div className="bg-red-50 border border-red-100 rounded-xl p-4 mb-5 text-sm text-red-700">
+              <p className="font-semibold mb-1">This action is permanent and cannot be undone.</p>
+              <p>All lessons, student submissions, grade sheets, and uploaded files for <span className="font-bold">{course.title}</span> will be permanently deleted.</p>
+            </div>
+            <div className="mb-5">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Type <span className="font-bold text-red-600">{courseCode}</span> to confirm
+              </label>
+              <input
+                type="text"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                placeholder={courseCode}
+                className="w-full p-3 border border-red-200 rounded-xl focus:ring-2 focus:ring-red-400 outline-none text-slate-800"
+              />
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setShowDeleteDialog(false); setDeleteConfirmText(""); }}
+                className="flex-1 border border-slate-200 text-slate-600 hover:bg-slate-50 py-2.5 rounded-xl font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteCourse}
+                disabled={deleting || deleteConfirmText !== courseCode}
+                className="flex-1 bg-red-600 hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed text-white py-2.5 rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                {deleting ? "Deleting..." : "Delete Course"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 mb-8 relative overflow-hidden">
         <div className="absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br from-indigo-100 to-purple-50 rounded-full blur-3xl opacity-50"></div>
-        <div className="relative z-10 flex justify-between items-start">
-          <div>
+        <div className="relative z-10 flex justify-between items-start gap-4">
+          <div className="flex-1 min-w-0">
             <span className="inline-block px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-lg border border-indigo-100 mb-4">{course.courseId}</span>
             <h1 className="text-3xl font-extrabold text-slate-800 mb-2">{course.title}</h1>
-            <p className="text-slate-600 max-w-3xl mb-4">{course.description}</p>
+            <p className="text-slate-600 max-w-3xl mb-1">{course.description}</p>
+            {course.credits && (
+              <span className="text-xs text-slate-400 font-medium">{course.credits} Credit{course.credits !== 1 ? 's' : ''}</span>
+            )}
           </div>
-          <button 
-            onClick={() => setShowAddForm(!showAddForm)}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-xl transition-colors flex items-center gap-2"
-          >
-            <FilePlus className="w-4 h-4" /> {showAddForm ? 'Cancel Form' : 'Add Assignment'}
-          </button>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              onClick={openEditModal}
+              className="bg-white border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 text-slate-600 hover:text-indigo-700 font-medium px-4 py-2 rounded-xl transition-colors flex items-center gap-2 shadow-sm"
+            >
+              <Pencil className="w-4 h-4" /> Edit
+            </button>
+            <button
+              onClick={() => setShowDeleteDialog(true)}
+              className="bg-white border border-slate-200 hover:border-red-300 hover:bg-red-50 text-slate-600 hover:text-red-600 font-medium px-4 py-2 rounded-xl transition-colors flex items-center gap-2 shadow-sm"
+            >
+              <Trash2 className="w-4 h-4" /> Delete
+            </button>
+            <button 
+              onClick={() => setShowAddForm(!showAddForm)}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-xl transition-colors flex items-center gap-2"
+            >
+              <FilePlus className="w-4 h-4" /> {showAddForm ? 'Cancel Form' : 'Add Assignment'}
+            </button>
+          </div>
         </div>
       </div>
 

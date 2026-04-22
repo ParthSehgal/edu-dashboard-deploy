@@ -46,7 +46,6 @@ exports.register = async (req, res) => {
           "CS": "CSE",
           "AI": "CSE",
           "CE": "Civil",
-          "CIVIL": "Civil",
           "HS": "Humanities",
           "MM": "Metallurgy"
         };
@@ -177,7 +176,6 @@ exports.verifyOTP = async (req, res) => {
       return res.status(400).json({ message: "OTP has expired. Please register again." });
     }
 
-    // Check 2: The Match (Bulletproof Logic)
     let isMatch = false;
     const providedOtpStr = String(otp).trim();
     const dbOtpStr = String(user.otp);
@@ -202,7 +200,6 @@ exports.verifyOTP = async (req, res) => {
       return res.status(400).json({ message: "Invalid OTP" });
     }
 
-    // Success! Clean up the user object
     user.isVerified = true;
     user.otp = undefined; // Use undefined instead of null to properly remove it from some Mongoose schemas
     user.otpExpiry = undefined;
@@ -218,7 +215,6 @@ exports.verifyOTP = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-// ── LOGIN ──────────────────────────────────────────────────────
 exports.login = async (req, res) => {
   try {
     const { collegeId, password } = req.body;
@@ -293,7 +289,7 @@ exports.promoteToHOD = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     if (!user || user.role !== "professor") {
-      return res.status(403).json({ message: "Only professors can become HODs." });
+      return res.status(403).json({ message: "Only professors can become HODs."});
     }
     user.isHOD = true;
     await user.save();
