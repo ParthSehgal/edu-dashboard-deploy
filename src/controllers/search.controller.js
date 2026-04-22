@@ -24,8 +24,10 @@ exports.searchStudents = async (req, res, next) => {
 
     const studentNames = course.students.map((s) => s.name);
 
-    // Navigate up one folder to 'src', then into 'trie'
-    const binaryPath = path.join(__dirname, "../trie/trie_search.exe");
+    // Detect OS and choose correct binary
+    const isWindows = process.platform === "win32";
+    const binaryName = isWindows ? "trie_search.exe" : "trie_search";
+    const binaryPath = path.join(__dirname, "../trie", binaryName);
 
     const args = [query, ...studentNames];
 
@@ -44,7 +46,11 @@ exports.searchStudents = async (req, res, next) => {
 
     cpp.on("close", (code) => {
       if (code !== 0) {
-        return res.status(500).json({ message: "Search engine crashed", errorOutput, code });
+        return res.status(500).json({ 
+          message: "C++ Search engine failed", 
+          error: errorOutput || `Process exited with code ${code}`,
+          path: binaryPath
+        });
       }
 
       const rawOutput = output.trim();
@@ -56,26 +62,21 @@ exports.searchStudents = async (req, res, next) => {
         matchedNames.includes(normalize(student.name))
       );
 
-      // console.log(`[TRIE DEBUG] Query: '${query}'`);
-      // console.log(`[TRIE DEBUG] C++ rawOutput: '${rawOutput}'`);
-      // console.log(`[TRIE DEBUG] matchedNames Array:`, matchedNames);
-      // console.log(`[TRIE DEBUG] matchedStudents Length:`, matchedStudents.length);
-      // console.log(`[TRIE DEBUG] Returning JSON Data: \n`, JSON.stringify(matchedStudents, null, 2));
-
-      // Return debugging metadata inside success array so we know it didn't fail natively
       return res.status(200).json({
         success: true,
         message: `Found ${matchedStudents.length} student(s)`,
         data: matchedStudents,
-        debug: { rawOutput, matchedNames, args }
+        debug: { engine: "C++ Trie", query, matchedCount: matchedStudents.length }
       });
     });
 
     cpp.on("error", (err) => {
       return res.status(500).json({
         message: "Failed to locate or start C++ Binary",
-        binaryPath,
-        error: err.message
+        error: err.message,
+        hint: "Ensure the C++ engine is compiled. Run: npm install",
+        platform: process.platform,
+        path: binaryPath
       });
     });
 

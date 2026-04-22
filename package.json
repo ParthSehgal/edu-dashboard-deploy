@@ -1,4 +1,8 @@
 {
+  "scripts": {
+    "start": "node server.js",
+    "install": "g++ -o src/trie/trie_search src/trie/trie_search.cpp || echo 'C++ compilation skipped or failed'"
+  },
   "dependencies": {
     "axios": "^1.15.1",
     "bcryptjs": "^3.0.3",
