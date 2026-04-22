@@ -70,13 +70,13 @@ export default function AssignmentHub() {
       
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6 relative z-10">
         <div>
-          <h2 className="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-3">
+          <h2 className="text-xl font-black text-slate-800 tracking-tight flex items-center gap-3">
             <div className="w-10 h-10 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-100">
               <Clock className="w-5 h-5" />
             </div>
             Assignments Hub
           </h2>
-          <p className="text-slate-500 text-sm mt-1 font-medium ml-13">Track and submit your course assignments.</p>
+          <p className="text-slate-500 text-xs mt-1 font-medium ml-13">Track and submit your course assignments.</p>
         </div>
 
         <div className="flex gap-2 bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
@@ -84,7 +84,7 @@ export default function AssignmentHub() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-5 py-2.5 text-sm font-bold rounded-xl transition-all capitalize ${
+              className={`px-4 py-2 text-xs font-bold rounded-xl transition-all capitalize ${
                 activeTab === tab
                   ? "bg-white text-indigo-600 shadow-sm border border-indigo-50"
                   : "text-slate-500 hover:text-slate-700 hover:bg-white/50"
@@ -128,7 +128,7 @@ export default function AssignmentHub() {
                     </span>
                   </div>
 
-                  <h3 className="font-bold text-xl text-slate-800 leading-tight mb-3 group-hover:text-indigo-600 transition-colors">
+                  <h3 className="font-bold text-lg text-slate-800 leading-tight mb-3 group-hover:text-indigo-600 transition-colors">
                     {assignment.title}
                   </h3>
                   {assignment.description && (

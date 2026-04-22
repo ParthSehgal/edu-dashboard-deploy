@@ -26,7 +26,7 @@ export default function StudentDashboard() {
           <div className="absolute right-0 top-0 w-64 h-64 bg-indigo-50 rounded-full -mr-20 -mt-20 blur-3xl opacity-50"></div>
           
           <div className="relative z-10">
-            <h1 className="text-4xl font-black text-slate-800 tracking-tight leading-tight">
+            <h1 className="text-3xl font-black text-slate-800 tracking-tight leading-tight">
               Welcome back, <span className="text-indigo-600">{user.name}</span>.
             </h1>
             <p className="text-slate-500 mt-2 font-medium flex items-center gap-2">
