@@ -13,7 +13,7 @@ app.use(cors({
 }));
 
 // Handle OPTIONS preflight manually as a backup
-app.options("*", cors());
+app.options("/{*splat}", cors());
 
 app.use(express.json());
 
