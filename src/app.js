@@ -4,9 +4,18 @@ const cors = require("cors");
 
 const app = express();
 
+// Enable CORS with explicit settings for Vercel
+app.use(cors({
+  origin: ["https://edu-dashboard-deploy.vercel.app", "http://localhost:3000"],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
+}));
+
+// Handle OPTIONS preflight manually as a backup
+app.options("*", cors());
 
 app.use(express.json());
-app.use(cors());
 
 const authRoutes = require("./routes/auth.routes");
 const courseRoutes = require("./routes/course.routes");

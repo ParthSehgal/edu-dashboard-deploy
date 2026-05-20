@@ -244,7 +244,7 @@ export default function ProfessorDashboard() {
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
                         <span className="font-semibold text-slate-800">{u.name}</span>
-                        <span className={`text-[10px] font-black uppercase tracking-widest w-fit px-1.5 py-0.5 rounded mt-0.5 ${u.placementRole === "senior" ? "bg-amber-100 text-amber-700" : "bg-blue-50 text-blue-500"}`}>
+                        <span className={`text-[10px] font-black uppercase tracking-widest w-fit px-1.5 py-0.5 rounded mt-0.5 ${u.placementRole === "senior" ? "bg-violet-100 text-violet-700" : "bg-blue-50 text-blue-500"}`}>
                           {u.placementRole || "Student"}
                         </span>
                       </div>
@@ -282,23 +282,25 @@ export default function ProfessorDashboard() {
 
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4 border-l-4 border-l-indigo-600">
-          <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center">
-            <Shield className="w-6 h-6" />
+        <div className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm flex items-center gap-5 border-l-8 border-l-indigo-600 relative overflow-hidden group hover:shadow-xl transition-all">
+          <div className="absolute right-0 bottom-0 w-24 h-24 bg-indigo-50 rounded-full -mr-8 -mb-8 group-hover:scale-150 transition-transform opacity-50"></div>
+          <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center relative z-10 shadow-inner">
+            <Shield className="w-7 h-7" />
           </div>
-          <div>
-            <h3 className="text-lg font-bold text-slate-800">Faculty Member</h3>
-            <p className="text-xs text-slate-500 font-medium">Branch: {userDept}</p>
+          <div className="relative z-10">
+            <h3 className="text-xl font-black text-slate-800 tracking-tight">Faculty Member</h3>
+            <p className="text-sm text-slate-500 font-bold">Branch: {userDept}</p>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4 border-l-4 border-l-blue-600">
-          <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center">
-            <BookOpen className="w-6 h-6" />
+        <div className="bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm flex items-center gap-5 border-l-8 border-l-blue-600 relative overflow-hidden group hover:shadow-xl transition-all">
+          <div className="absolute right-0 bottom-0 w-24 h-24 bg-blue-50 rounded-full -mr-8 -mb-8 group-hover:scale-150 transition-transform opacity-50"></div>
+          <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center relative z-10 shadow-inner">
+            <BookOpen className="w-7 h-7" />
           </div>
-          <div>
-            <h3 className="text-lg font-bold text-slate-800">{courses.length} Courses</h3>
-            <p className="text-xs text-slate-500 font-medium">Teaching assignments</p>
+          <div className="relative z-10">
+            <h3 className="text-xl font-black text-slate-800 tracking-tight">{courses.length} Courses</h3>
+            <p className="text-sm text-slate-500 font-bold">Teaching assignments</p>
           </div>
         </div>
       </div>
