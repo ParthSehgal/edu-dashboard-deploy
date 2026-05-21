@@ -217,10 +217,33 @@ exports.verifyOTP = async (req, res) => {
 };
 exports.login = async (req, res) => {
   try {
-    const { collegeId, password } = req.body;
+    let { collegeId, password } = req.body;
 
     if (!collegeId || !password) {
       return res.status(400).json({ message: "College ID and password are required" });
+    }
+
+    if (collegeId) collegeId = collegeId.toUpperCase().trim();
+
+    // ── GUEST LOGINS AUTO-CREATION ────────────────────────────────────
+    if (collegeId === "2401AI56" || collegeId === "1212") {
+      const existingUser = await User.findOne({ collegeId });
+      if (!existingUser) {
+        console.log(`[Guest] Auto-seeding guest user: ${collegeId}`);
+        const isStudent = collegeId === "2401AI56";
+        const hashedPassword = await bcrypt.hash(isStudent ? "Abhinav" : "121212", 10);
+        
+        await User.create({
+          name: isStudent ? "Guest Student" : "Guest Professor",
+          collegeId,
+          email: isStudent ? "student_2401ai56@iitp.ac.in" : "professor_1212@iitp.ac.in",
+          password: hashedPassword,
+          role: isStudent ? "student" : "professor",
+          department: "CSE",
+          isVerified: true,
+          isHOD: !isStudent
+        });
+      }
     }
 
     const user = await User.findOne({ collegeId }).select('+password');

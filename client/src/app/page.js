@@ -122,8 +122,8 @@ export default function LoginPage() {
 
     try {
       console.log(">>> INITIATING NATIVE FETCH BYPASS FOR LOGIN <<<");
-
-      const response = await fetch('https://edu-dashboard-deploy.onrender.com/api/auth/login', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://edu-dashboard-deploy.onrender.com/api';
+      const response = await fetch(`${apiUrl}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -151,6 +151,57 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGuestLogin = async (role) => {
+    let targetId = "";
+    let targetPass = "";
+
+    if (role === "student") {
+      targetId = "2401AI56";
+      targetPass = "Abhinav";
+      setFocusState("username");
+    } else {
+      targetId = "1212";
+      targetPass = "121212";
+      setFocusState("password");
+    }
+
+    setCollegeId(targetId);
+    setPassword(targetPass);
+    setError("");
+
+    // Elegant delay to showcase field populating and eyes tracking focus
+    setTimeout(async () => {
+      setLoading(true);
+      try {
+        console.log(">>> INITIATING GUEST LOGIN <<<");
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://edu-dashboard-deploy.onrender.com/api';
+        const response = await fetch(`${apiUrl}/auth/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ collegeId: targetId, password: targetPass }) 
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw data;
+        }
+        
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        localStorage.setItem("role", data.user.role);
+
+        router.push(`/dashboard/${data.user.role}`);
+      } catch (err) {
+        setError(err.message || "Invalid guest credentials. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    }, 600);
   };
 
   const handleUsernameBlur = () => {
@@ -245,6 +296,45 @@ export default function LoginPage() {
             {loading ? 'Entering Dashboard...' : 'Sign In'}
           </button>
         </form>
+
+        {/* Guest Access Divider */}
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center" aria-hidden="true">
+            <div className="w-full border-t border-slate-200/80"></div>
+          </div>
+          <div className="relative flex justify-center text-xs uppercase tracking-wider font-semibold">
+            <span className="px-3 bg-white text-slate-400">Quick Guest Access</span>
+          </div>
+        </div>
+
+        {/* Guest Cards */}
+        <div className="grid grid-cols-2 gap-4">
+          <button
+            type="button"
+            onClick={() => handleGuestLogin("student")}
+            disabled={loading}
+            className="flex flex-col items-center justify-center p-3.5 border border-slate-200/80 rounded-2xl bg-slate-50/50 hover:bg-indigo-50/50 hover:border-indigo-200 hover:shadow-md transition-all duration-300 text-left group"
+          >
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-xl group-hover:scale-110 transition-transform duration-300">🎓</span>
+              <span className="text-sm font-bold text-slate-700 group-hover:text-indigo-600 transition-colors">Student</span>
+            </div>
+            <span className="text-xs text-slate-400 group-hover:text-indigo-500/80 transition-colors font-mono">Roll: 2401AI56</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleGuestLogin("professor")}
+            disabled={loading}
+            className="flex flex-col items-center justify-center p-3.5 border border-slate-200/80 rounded-2xl bg-slate-50/50 hover:bg-violet-50/50 hover:border-violet-200 hover:shadow-md transition-all duration-300 text-left group"
+          >
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-xl group-hover:scale-110 transition-transform duration-300">👨‍🏫</span>
+              <span className="text-sm font-bold text-slate-700 group-hover:text-violet-600 transition-colors">Professor</span>
+            </div>
+            <span className="text-xs text-slate-400 group-hover:text-violet-500/80 transition-colors font-mono">Roll: 1212</span>
+          </button>
+        </div>
 
         <p className="mt-8 text-center text-sm text-slate-500">
           Don&apos;t have an account?{' '}
