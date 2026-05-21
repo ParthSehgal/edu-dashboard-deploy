@@ -226,13 +226,13 @@ exports.login = async (req, res) => {
     if (collegeId) collegeId = collegeId.toUpperCase().trim();
 
     // ── GUEST LOGINS AUTO-CREATION ────────────────────────────────────
-    if (collegeId === "2401AI56" || collegeId === "1212") {
+    if (collegeId === "2401AI56" || collegeId === "121212") {
       const existingUser = await User.findOne({ collegeId });
       if (!existingUser) {
         console.log(`[Guest] Auto-seeding guest user: ${collegeId}`);
         const isStudent = collegeId === "2401AI56";
-        const hashedPassword = await bcrypt.hash(isStudent ? "Abhinav" : "121212", 10);
-        
+        const hashedPassword = await bcrypt.hash(isStudent ? "Abhinav" : "1212", 10);
+
         await User.create({
           name: isStudent ? "Guest Student" : "Guest Professor",
           collegeId,
@@ -312,7 +312,7 @@ exports.promoteToHOD = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     if (!user || user.role !== "professor") {
-      return res.status(403).json({ message: "Only professors can become HODs."});
+      return res.status(403).json({ message: "Only professors can become HODs." });
     }
     user.isHOD = true;
     await user.save();
