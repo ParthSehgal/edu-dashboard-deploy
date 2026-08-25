@@ -163,7 +163,7 @@ export default function LoginPage() {
       setFocusState("username");
     } else {
       targetId = "1212";
-      targetPass = "121212";
+      targetPass = "1212";
       setFocusState("password");
     }
 
